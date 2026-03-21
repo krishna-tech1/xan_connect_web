@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiCalendar, FiFileText, FiClock, FiPlus, FiCheckCircle, FiXCircle, FiLoader } from 'react-icons/fi';
+import { Calendar, FileText, Clock, Plus, CheckCircle, XCircle, Loader } from 'lucide-react';
 import axios from 'axios';
 
 const LeaveRequests = ({ user }) => {
@@ -86,7 +86,7 @@ const LeaveRequests = ({ user }) => {
                     <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm sticky top-24">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-[#0047AB]">
-                                <FiPlus size={20} strokeWidth={3} />
+                                <Plus size={20} strokeWidth={3} />
                             </div>
                             <h3 className="text-lg font-black text-[#1C2B4E]">New Request</h3>
                         </div>
@@ -154,7 +154,7 @@ const LeaveRequests = ({ user }) => {
                                 disabled={loading}
                                 className="w-full py-4 bg-[#0047AB] text-white rounded-2xl font-black text-sm shadow-xl shadow-blue-100 hover:bg-[#003991] active:scale-95 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
                             >
-                                {loading ? <FiLoader className="animate-spin" /> : 'Apply for Leave'}
+                                {loading ? <Loader className="animate-spin" /> : 'Apply for Leave'}
                             </button>
                         </form>
                     </div>
@@ -164,14 +164,14 @@ const LeaveRequests = ({ user }) => {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center gap-3 mb-2 px-2">
                         <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400">
-                            <FiClock size={20} strokeWidth={2.5} />
+                            <Clock size={20} strokeWidth={2.5} />
                         </div>
                         <h3 className="text-xl font-black text-[#1C2B4E]">My Leave History</h3>
                     </div>
 
                     {fetchingHistory ? (
                         <div className="p-20 flex flex-col items-center justify-center bg-white rounded-[40px] border border-slate-50 shadow-sm border-dashed">
-                            <FiLoader className="text-slate-200 animate-spin mb-4" size={40} />
+                            <Loader className="text-slate-200 animate-spin mb-4" size={40} />
                         </div>
                     ) : history.length > 0 ? (
                         <div className="space-y-6">
@@ -187,7 +187,7 @@ const LeaveRequests = ({ user }) => {
                                             <div className="space-y-1">
                                                 <h4 className="text-lg font-black text-[#1C2B4E]">{leave.leaveType}</h4>
                                                 <div className="flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-tight">
-                                                    <span className="flex items-center gap-1.5"><FiCalendar size={14} /> {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</span>
+                                                    <span className="flex items-center gap-1.5"><Calendar size={14} /> {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</span>
                                                 </div>
                                                 <p className="text-sm font-bold text-slate-500 mt-2">"{leave.reason}"</p>
                                             </div>
@@ -207,7 +207,7 @@ const LeaveRequests = ({ user }) => {
                     ) : (
                         <div className="p-20 flex flex-col items-center justify-center bg-white rounded-[40px] border border-slate-100 shadow-sm border-dashed">
                             <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-100 mb-6">
-                                <FiFileText size={40} />
+                                <FileText size={40} />
                             </div>
                             <h4 className="text-xl font-black text-slate-200 uppercase tracking-widest">No Leave Records</h4>
                             <p className="text-slate-300 font-bold mt-2">Your submitted leave requests will appear here.</p>
