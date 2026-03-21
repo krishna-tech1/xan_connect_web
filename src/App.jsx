@@ -247,6 +247,10 @@ function App() {
                         {user.role === 'teacher' && activeTab === 'students' && (
                             <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight">Students</h2>
                         )}
+
+                        {user.role === 'teacher' && activeTab === 'leaves' && (
+                            <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight">Leave Application</h2>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-8">
