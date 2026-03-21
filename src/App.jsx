@@ -69,7 +69,7 @@ function App() {
                 case 'homework_assign':
                     return <AssignHomework />;
                 case 'timetable':
-                    return <TeacherTimetable />;
+                    return <TeacherTimetable user={user} />;
                 case 'students':
                     return <StudentsRegistry />;
                 case 'library':
