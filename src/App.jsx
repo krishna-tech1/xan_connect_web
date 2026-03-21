@@ -81,7 +81,7 @@ function App() {
                 case 'reports':
                     return <Reports />;
                 case 'leaves':
-                    return <LeaveRequests />;
+                    return <LeaveRequests user={user} />;
                 case 'settings':
                     return (
                         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
