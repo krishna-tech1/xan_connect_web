@@ -3,41 +3,40 @@ import { AppConstants } from '../utils/constants';
 import loginBg from '../assets/login.png';
 import schoolLogo from '../assets/logo.png';
 
+import { portalAPI } from '../services/api';
+
 const LoginPage = ({ onLogin }) => {
-    const [role, setRole] = useState(AppConstants.roleParent);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [role, setRole] = useState('parent'); // 'parent' (for student) or 'teacher'
+    const [loginId, setLoginId] = useState('');
+    const [dob, setDob] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
-        setTimeout(() => {
-            let isValid = false;
-            let userData = null;
+        try {
+            const response = await portalAPI.login({
+                id: loginId,
+                dob: dob,
+                role: role === 'parent' ? 'student' : 'teacher'
+            });
 
-            if (role === AppConstants.roleParent) {
-                if (email === AppConstants.parentEmail && password === AppConstants.parentPassword) {
-                    isValid = true;
-                    userData = { name: AppConstants.parentName, role: AppConstants.roleParent, id: AppConstants.parentId };
-                }
-            } else {
-                if (email === AppConstants.teacherEmail && password === AppConstants.teacherPassword) {
-                    isValid = true;
-                    userData = { name: AppConstants.teacherName, role: AppConstants.roleTeacher, id: AppConstants.teacherId };
-                }
-            }
-
-            if (isValid) {
-                onLogin(userData);
-            } else {
-                setError('Invalid email or password.');
-                setLoading(false);
-            }
-        }, 800);
+            const { token, user } = response.data;
+            
+            // Save session
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            onLogin(user);
+        } catch (err) {
+            console.error('Login failed:', err);
+            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -53,16 +52,16 @@ const LoginPage = ({ onLogin }) => {
                     {/* Role Toggles - Styled precisely like the image */}
                     <div className="flex mb-10 overflow-hidden border-[1.5px] border-[#004AAD] rounded-xl shadow-sm">
                         <button
-                            onClick={() => setRole(AppConstants.roleParent)}
+                            onClick={() => setRole('parent')}
                             type="button"
-                            className={`flex-1 py-3.5 text-[15px] font-[700] transition-all ${role === AppConstants.roleParent ? 'bg-[#004AAD] text-white' : 'bg-white text-[#004AAD]'}`}
+                            className={`flex-1 py-3.5 text-[15px] font-[700] transition-all ${role === 'parent' ? 'bg-[#004AAD] text-white' : 'bg-white text-[#004AAD]'}`}
                         >
-                            Parent
+                            Student
                         </button>
                         <button
-                            onClick={() => setRole(AppConstants.roleTeacher)}
+                            onClick={() => setRole('teacher')}
                             type="button"
-                            className={`flex-1 py-3.5 text-[15px] font-[700] transition-all ${role === AppConstants.roleTeacher ? 'bg-[#004AAD] text-white' : 'bg-white text-[#004AAD]'}`}
+                            className={`flex-1 py-3.5 text-[15px] font-[700] transition-all ${role === 'teacher' ? 'bg-[#004AAD] text-white' : 'bg-white text-[#004AAD]'}`}
                         >
                             Teacher
                         </button>
@@ -70,34 +69,30 @@ const LoginPage = ({ onLogin }) => {
 
                     <form onSubmit={handleLogin} className="space-y-8">
                         <div className="space-y-2.5">
-                            <label className="block text-sm font-[700] text-[#2D3748] ml-0.5">Email</label>
+                            <label className="block text-sm font-[700] text-[#2D3748] ml-0.5">
+                                {role === 'teacher' ? 'Staff ID' : 'Student ID'}
+                            </label>
                             <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="email@school.com"
+                                type="text"
+                                value={loginId}
+                                onChange={(e) => setLoginId(e.target.value)}
+                                placeholder={role === 'teacher' ? 'STF-XXXXXX' : 'STU-XXXXXX'}
                                 required
                                 className="w-full bg-[#EBF4FF] border-none rounded-[18px] p-4 focus:ring-2 focus:ring-[#004AAD]/20 transition-all placeholder:text-[#2D3748]/40 outline-none text-[#2D3748] font-[500] text-[15px]"
                             />
                         </div>
 
                         <div className="space-y-2.5">
-                            <label className="block text-sm font-[700] text-[#2D3748] ml-0.5">Password</label>
+                            <label className="block text-sm font-[700] text-[#2D3748] ml-0.5">Date of Birth (Password)</label>
                             <div className="relative">
                                 <input
                                     type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
+                                    value={dob}
+                                    onChange={(e) => setDob(e.target.value)}
+                                    placeholder="YYYY-MM-DD"
                                     required
-                                    className="w-full bg-[#EBF4FF] border-none rounded-[18px] p-4 focus:ring-2 focus:ring-[#004AAD]/20 transition-all placeholder:text-[#2D3748]/40 outline-none text-[#2D3748] font-[500] text-[15px]"
+                                    className="w-full bg-[#EBF4FF] border-none rounded-[18px] p-4 focus:ring-2 focus:ring-[#004AAD]/20 transition-all outline-none text-[#2D3748] font-[500] text-[15px]"
                                 />
-                                <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[#2D3748]/50 cursor-pointer hover:text-[#004AAD] transition-colors">
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </div>
                             </div>
                         </div>
 

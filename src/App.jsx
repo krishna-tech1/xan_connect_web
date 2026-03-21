@@ -159,25 +159,19 @@ function App() {
                             </button>
                         )}
 
-                        {user.role === 'parent' && (
-                            <div className="flex items-center gap-4">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-0.5 ml-1">Student</span>
-                                    <div className="flex items-center gap-4 px-4 py-2 bg-white/50 rounded-xl border border-slate-100/50 group cursor-pointer hover:bg-white transition-all shadow-sm">
-                                        <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
-                                            <span className="text-[10px] font-black text-[#004AAD]">A</span>
-                                        </div>
-                                        <span className="text-[13px] font-bold text-[#1C2B4E]">Aaryan</span>
-                                        <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </div>
-                                </div>
+                        {(user.role === 'student' || user.role === 'parent') && (
+                            <div className="flex flex-col">
+                                <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight leading-none mb-1.5">
+                                    Welcome, <span className="text-[#004AAD]">{user.details?.guardianName || user.name}</span>!
+                                </h2>
+                                <p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest ml-0.5">
+                                    Overview of <span className="text-[#004AAD]">{user.name}</span>'s Academic Progress
+                                </p>
                             </div>
                         )}
 
                         {user.role === 'teacher' && activeTab === 'dashboard' && (
-                            <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight">Good Morning, Mrs. Priya Das!</h2>
+                            <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight">Good Morning, {user.name}!</h2>
                         )}
 
                         {user.role === 'teacher' && activeTab === 'classes' && (
@@ -256,15 +250,6 @@ function App() {
                     </div>
 
                     <div className="flex items-center gap-8">
-                        <button className="relative p-2 text-slate-400 hover:text-[#004AAD] transition-all hover:bg-blue-50 rounded-xl group">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white group-hover:scale-110 transition-transform"></span>
-                        </button>
-
-                        <div className="h-8 w-[1px] bg-slate-100"></div>
-
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-end text-right">
                                 <span className="text-[12px] font-extrabold text-[#1C2B4E] leading-none">{user.name}</span>

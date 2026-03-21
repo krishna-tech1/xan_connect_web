@@ -97,12 +97,7 @@ const DashboardTab = ({ user, onTabChange }) => {
 
     return (
         <div className="animate-in fade-in duration-500 w-full font-inter">
-            {/* Welcome Message */}
-            <div className="mb-6">
-                <h2 className="text-[28px] font-bold text-[#1C2B4E]">
-                    Welcome, {user?.name}!
-                </h2>
-                <p className="text-slate-400 text-sm font-medium mt-0.5">Here's an overview of Aaryan's academic progress.</p>
+            <div className="mb-2">
             </div>
 
             {/* Profile Bar - ENHANCED */}
@@ -118,15 +113,15 @@ const DashboardTab = ({ user, onTabChange }) => {
                     </div>
                     <div>
                         <div className="flex items-center gap-3 mb-1">
-                            <h3 className="text-2xl font-black text-[#1C2B4E]">Aaryan</h3>
+                            <h3 className="text-2xl font-black text-[#1C2B4E]">{user?.name}</h3>
                             <span className="bg-blue-50 text-[#004AAD] px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-blue-100/50">Active</span>
                         </div>
                         <p className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                            Class 10-A
+                            Class {user?.details?.class}-{user?.details?.section}
                             <span className="w-1 h-1 rounded-full bg-slate-200"></span>
-                            Roll No: 001
+                            Roll No: {user?.details?.rollNumber}
                             <span className="w-1 h-1 rounded-full bg-slate-200"></span>
-                            ID: STU-200156
+                            ID: {user?.details?.studentId}
                         </p>
                     </div>
                 </div>
