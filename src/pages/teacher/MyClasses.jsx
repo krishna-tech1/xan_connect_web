@@ -17,32 +17,41 @@ const MyClasses = ({ user, onSelectClass }) => {
             ? subjectsData 
             : (typeof subjectsData === 'string' ? JSON.parse(subjectsData || '[]') : []);
 
-        const uniqueClasses = [];
-        const seen = new Set();
+        const classMap = {};
         
         // Add assigned individual subjects
         subjects.forEach(item => {
-            const key = `${item.class || item.className}`;
-            if (!seen.has(key)) {
-                uniqueClasses.push({
-                    grade: key,
-                    subject: item.subject,
-                    type: 'Subject Teacher'
-                });
-                seen.add(key);
+            const key = `${item.class || item.className || item.grade}`.trim().toUpperCase();
+            if (key) {
+                if (!classMap[key]) {
+                    classMap[key] = {
+                        grade: key,
+                        subject: item.subject,
+                        roles: ['Subject Teacher']
+                    };
+                } else {
+                    // Update subject to show combined if different? Actually user just wants roles.
+                }
             }
         });
 
-        // Add class teacher role as a primary box if exists
-        const ct = String(user.class_teacher || '').trim();
-        if (ct && ct.toUpperCase() !== 'NONE' && ct.toLowerCase() !== 'null' && !seen.has(ct)) {
-            uniqueClasses.unshift({
-                grade: ct,
-                subject: 'All Subjects (Class Teacher)',
-                type: 'Class Teacher'
-            });
+        // Add class teacher role
+        const ct = String(user.class_teacher || '').trim().toUpperCase();
+        if (ct && ct !== 'NONE' && ct !== 'NULL') {
+            if (classMap[ct]) {
+                if (!classMap[ct].roles.includes('Class Teacher')) {
+                    classMap[ct].roles.push('Class Teacher');
+                }
+            } else {
+                classMap[ct] = {
+                    grade: ct,
+                    subject: 'Class Administration',
+                    roles: ['Class Teacher']
+                };
+            }
         }
 
+        const uniqueClasses = Object.values(classMap);
         setClasses(uniqueClasses);
         fetchCounts(uniqueClasses.map(c => c.grade));
     }, [user]);
@@ -96,11 +105,20 @@ const MyClasses = ({ user, onSelectClass }) => {
                         onClick={() => onSelectClass(cls.grade)}
                         className="bg-white rounded-[32px] border border-slate-100 shadow-sm flex flex-col hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer group relative overflow-hidden"
                     >
-                        {/* Status Tag */}
-                        <div className={`absolute top-6 right-6 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                            cls.type === 'Class Teacher' ? 'bg-emerald-50 text-emerald-500' : 'bg-blue-50 text-blue-500'
-                        }`}>
-                            {cls.type}
+                        {/* Status Tags */}
+                        <div className="absolute top-6 right-6 flex flex-col items-end gap-1.5">
+                            {cls.roles.map((role, rIdx) => (
+                                <div 
+                                    key={rIdx}
+                                    className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm border border-transparent ${
+                                        role === 'Class Teacher' 
+                                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' 
+                                            : 'bg-blue-50 text-blue-600 border-blue-100/50'
+                                    }`}
+                                >
+                                    {role}
+                                </div>
+                            ))}
                         </div>
 
                         <div className="p-10 pb-8 flex-1">
