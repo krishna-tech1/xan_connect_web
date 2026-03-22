@@ -250,33 +250,39 @@ const StudentsRegistry = ({ user, initialFilter }) => {
                             </div>
 
                             <div className="w-full space-y-4">
-                                {[
-                                    { label: 'Attendance', value: studentAttendance === 'N/A' ? 'No Records' : `${studentAttendance}%`, icon: Calendar, color: 'text-emerald-500', bg: 'bg-emerald-50', show: true },
-                                    { 
-                                        label: 'Subject Score', 
-                                        value: studentMarks.length > 0 ? `${studentMarks[0].marks}/100` : 'None', 
-                                        icon: Award, 
-                                        color: 'text-[#004AAD]', 
-                                        bg: 'bg-blue-50',
-                                        show: studentMarks.length > 0 
-                                    },
-                                    { label: 'Date of Birth', value: selectedStudent.dob || 'Not Set', icon: User, color: 'text-orange-500', bg: 'bg-orange-50', show: true }
-                                ].filter(item => item.show).map((item, idx) => (
-                                    <div key={idx} className="bg-[#F8FAFC] rounded-3xl p-6 flex items-center gap-6 group hover:bg-slate-100/50 transition-all border border-white hover:border-slate-100/50">
-                                        <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform border border-white`}>
-                                            <item.icon size={22} />
+                                {(() => {
+                                    const allVals = studentMarks.map(m => parseFloat(m.marks)).filter(v => !isNaN(v));
+                                    const avg = allVals.length > 0 ? Math.round(allVals.reduce((a, b) => a + b, 0) / allVals.length) : null;
+                                    const subjectName = studentMarks.length > 0 ? studentMarks[0].subject : '';
+
+                                    return [
+                                        { label: 'Attendance', value: studentAttendance === 'N/A' ? 'No Records' : `${studentAttendance}%`, icon: Calendar, color: 'text-emerald-500', bg: 'bg-emerald-50', show: true },
+                                        { 
+                                            label: 'Average Score', 
+                                            value: avg !== null ? `${avg}/100` : 'None', 
+                                            icon: Award, 
+                                            color: 'text-[#004AAD]', 
+                                            bg: 'bg-blue-50',
+                                            show: studentMarks.length > 0 
+                                        },
+                                        { label: 'Date of Birth', value: selectedStudent.dob || 'Not Set', icon: User, color: 'text-orange-500', bg: 'bg-orange-50', show: true }
+                                    ].filter(item => item.show).map((item, idx) => (
+                                        <div key={idx} className="bg-[#F8FAFC] rounded-3xl p-6 flex items-center gap-6 group hover:bg-slate-100/50 transition-all border border-white hover:border-slate-100/50">
+                                            <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform border border-white`}>
+                                                <item.icon size={22} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5 font-inter">{item.label}</p>
+                                                <p className="text-[16px] font-black text-[#1C2B4E] font-inter">
+                                                    {item.value}
+                                                    {item.label === 'Average Score' && studentMarks.length > 0 && (
+                                                        <span className="text-[10px] font-bold ml-2 text-slate-300">({subjectName})</span>
+                                                    )}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5 font-inter">{item.label}</p>
-                                            <p className="text-[16px] font-black text-[#1C2B4E] font-inter">
-                                                {item.value}
-                                                {item.label === 'Subject Score' && studentMarks.length > 1 && (
-                                                    <span className="text-[10px] font-bold ml-2 text-slate-300">({studentMarks[0].subject})</span>
-                                                )}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ));
+                                })()}
                             </div>
 
                             <button className="w-full mt-10 bg-[#1C2B4E] text-white py-5 rounded-3xl flex items-center justify-center gap-3 font-black text-[14px] shadow-xl shadow-slate-100 hover:bg-[#000] active:scale-[0.98] transition-all group">
