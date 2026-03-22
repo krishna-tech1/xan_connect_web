@@ -3,32 +3,66 @@ import axios from 'axios';
 
 const DashboardTab = ({ user, onTabChange }) => {
     const [liveAnnouncements, setLiveAnnouncements] = useState([]);
+    const [attendancePercent, setAttendancePercent] = useState('...');
+    const [recentMarks, setRecentMarks] = useState([]);
+    const [overallGrade, setOverallGrade] = useState('...');
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
 
+    const studentId = user?.details?.studentId || user?.id;
+
     useEffect(() => {
-        const fetchRecent = async () => {
+        if (!studentId) return;
+
+        const fetchData = async () => {
             try {
-                const response = await axios.get(`${API_URL}/api/portal/announcements`, {
+                // Fetch Announcements
+                const annRes = await axios.get(`${API_URL}/api/portal/announcements`, {
                     params: { 
                         role: 'student', 
                         class: user?.details?.class ? `${user.details.class}-${user.details.section}` : null 
                     }
                 });
-                setLiveAnnouncements(response.data.slice(0, 3));
+                setLiveAnnouncements(annRes.data.slice(0, 3));
+
+                // Fetch Attendance for stat
+                const attRes = await axios.get(`${API_URL}/api/portal/student-attendance/${studentId}`);
+                const records = attRes.data;
+                const total = records.length;
+                const present = records.filter(r => r.status === 'Present').length;
+                if (total > 0) {
+                    setAttendancePercent(`${Math.round((present / total) * 100)}%`);
+                } else {
+                    setAttendancePercent('No Data');
+                }
+
+                // Fetch Marks for table & overall grade
+                const marksRes = await axios.get(`${API_URL}/api/portal/student-marks/${studentId}`);
+                const marksData = marksRes.data;
+                setRecentMarks(marksData.slice(0, 5));
+                
+                const allVals = marksData.map(m => parseFloat(m.marks)).filter(v => !isNaN(v));
+                if (allVals.length > 0) {
+                    const avg = allVals.reduce((a, b) => a + b, 0) / allVals.length;
+                    if (avg >= 90) setOverallGrade('A+');
+                    else if (avg >= 80) setOverallGrade('A');
+                    else if (avg >= 70) setOverallGrade('B+');
+                    else if (avg >= 60) setOverallGrade('B');
+                    else setOverallGrade('C');
+                }
             } catch (err) {
-                console.error('Student Dash Fetch Error:', err);
+                console.error('Dashboard Data Fetch Error:', err);
             }
         };
-        fetchRecent();
-    }, [user]);
+
+        fetchData();
+    }, [user, studentId]);
 
     const stats = [
         {
             id: 'attendance',
             label: 'Attendance',
-            value: '96%',
-            subValue: 'Excellent',
-            // Exact matching icon path for Attendance (List with checks)
+            value: attendancePercent,
+            subValue: parseFloat(attendancePercent) >= 90 ? 'Excellent' : 'Average',
             iconSrc: (color) => (
                 <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     <path d="M9 11l3 3L22 4" />
@@ -42,9 +76,8 @@ const DashboardTab = ({ user, onTabChange }) => {
         {
             id: 'results',
             label: 'Overall Grade',
-            value: 'A',
-            subValue: 'Excellent',
-            // Exact matching icon path for Overall Grade (Medal/Trophy)
+            value: overallGrade,
+            subValue: overallGrade.includes('A') ? 'Excellent' : 'Maintain',
             iconSrc: (color) => (
                 <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     <path d="M8 21h8" />
@@ -64,7 +97,6 @@ const DashboardTab = ({ user, onTabChange }) => {
             label: 'Pending Fees',
             value: '₹12,500',
             subValue: 'Due: Mar 15',
-            // Exact matching icon path for Fees (Rupee in Circle)
             iconSrc: (color) => (
                 <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     <circle cx="12" cy="12" r="10" />
@@ -83,7 +115,6 @@ const DashboardTab = ({ user, onTabChange }) => {
             label: 'Homework Due',
             value: '2',
             subValue: '2 assignments pending',
-            // Exact matching icon path for Homework (Pencil)
             iconSrc: (color) => (
                 <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
@@ -93,14 +124,6 @@ const DashboardTab = ({ user, onTabChange }) => {
             iconColor: '#667EEA',
             subValueColor: '#E53E3E'
         }
-    ];
-
-    const results = [
-        { subject: 'Mathematics', exam: 'Unit Test 2', marks: '76/100', grade: 'B+' },
-        { subject: 'Science', exam: 'Unit Test 1', marks: '90/100', grade: 'B+' },
-        { subject: 'English', exam: 'Unit Test 2', marks: '88/100', grade: 'B+' },
-        { subject: 'Hindi', exam: 'Unit Test 2', marks: '75/100', grade: 'B+' },
-        { subject: 'Computer', exam: 'Unit Test 1', marks: '88/100', grade: 'B+' },
     ];
 
     const upcoming = [
@@ -191,18 +214,30 @@ const DashboardTab = ({ user, onTabChange }) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {results.map((row, i) => (
-                                    <tr key={i} className="text-sm font-semibold text-[#2D3748]">
-                                        <td className="py-4 pl-2 font-bold font-inter">{row.subject}</td>
-                                        <td className="py-4 text-slate-400 font-inter">{row.exam}</td>
-                                        <td className="py-4 text-slate-400 font-inter">{row.marks}</td>
-                                        <td className="py-4 text-center">
-                                            <span className="bg-blue-50 text-[#004AAD] px-3 py-1 rounded-lg text-[11px] font-bold border border-blue-100/50 font-inter">
-                                                {row.grade}
-                                            </span>
+                                {recentMarks.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="4" className="py-8 text-center text-slate-300 font-bold text-xs uppercase tracking-widest border-2 border-dashed border-slate-50 rounded-xl">
+                                            No recent marks
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    recentMarks.map((row, i) => {
+                                        const marksVal = parseFloat(row.marks);
+                                        const grade = !isNaN(marksVal) ? (marksVal >= 90 ? 'A+' : marksVal >= 80 ? 'A' : marksVal >= 70 ? 'B+' : 'B') : '—';
+                                        return (
+                                            <tr key={i} className="text-sm font-semibold text-[#2D3748]">
+                                                <td className="py-4 pl-2 font-bold font-inter">{row.subject}</td>
+                                                <td className="py-4 text-slate-400 font-inter">{row.exam_type}</td>
+                                                <td className="py-4 text-slate-400 font-inter">{row.marks}</td>
+                                                <td className="py-4 text-center">
+                                                    <span className="bg-blue-50 text-[#004AAD] px-3 py-1 rounded-lg text-[11px] font-bold border border-blue-100/50 font-inter">
+                                                        {grade}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
                             </tbody>
                         </table>
                     </div>
