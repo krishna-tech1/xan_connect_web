@@ -1,6 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const DashboardTab = ({ user, onTabChange }) => {
+    const [liveAnnouncements, setLiveAnnouncements] = useState([]);
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
+
+    useEffect(() => {
+        const fetchRecent = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/api/portal/announcements`, {
+                    params: { 
+                        role: 'student', 
+                        class: user?.details?.class ? `${user.details.class}-${user.details.section}` : null 
+                    }
+                });
+                setLiveAnnouncements(response.data.slice(0, 3));
+            } catch (err) {
+                console.error('Student Dash Fetch Error:', err);
+            }
+        };
+        fetchRecent();
+    }, [user]);
+
     const stats = [
         {
             id: 'attendance',
@@ -187,14 +208,41 @@ const DashboardTab = ({ user, onTabChange }) => {
                     </div>
                 </div>
 
-                {/* Upcoming */}
+                {/* Recent Announcements */}
                 <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <h4 className="text-base font-bold text-[#1C2B4E] mb-8">Upcoming</h4>
-                    <div className="space-y-8">
-                        {upcoming.map((item, i) => (
-                            <div key={i} className="flex flex-col gap-1">
-                                <h5 className="text-[15px] font-bold text-[#2D3748] font-inter">{item.title}</h5>
-                                <p className="text-xs font-bold text-slate-300 font-inter">{item.date}</p>
+                    <div className="flex justify-between items-center mb-8">
+                        <h4 className="text-base font-bold text-[#1C2B4E]">Recent Announcements</h4>
+                        <button 
+                            onClick={() => onTabChange?.('announcements')}
+                            className="text-[10px] font-black text-[#004AAD] uppercase tracking-widest hover:underline"
+                        >
+                            View All
+                        </button>
+                    </div>
+                    <div className="space-y-6">
+                        {liveAnnouncements.length === 0 ? (
+                            <div className="py-8 text-center text-slate-300 font-bold text-xs uppercase tracking-widest border-2 border-dashed border-slate-50 rounded-xl">
+                                No new broadcasts
+                            </div>
+                        ) : liveAnnouncements.map((item, i) => (
+                            <div 
+                                key={item.id || i} 
+                                onClick={() => onTabChange?.('announcements')}
+                                className="flex justify-between items-start group cursor-pointer border-b border-white pb-1 last:border-0"
+                            >
+                                <div>
+                                    <h5 className="text-[14px] font-bold text-[#2D3748] group-hover:text-[#004AAD] transition-colors font-inter line-clamp-1">{item.title}</h5>
+                                    <p className="text-[10px] font-bold text-slate-300 mt-0.5 font-inter capitalize">
+                                        {new Date(item.created_at).toLocaleDateString()} • {item.sender_name}
+                                    </p>
+                                </div>
+                                <span className={`shrink-0 ml-3 text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-wider ${
+                                    item.type === 'warning' ? 'bg-rose-50 text-rose-500' :
+                                    item.type === 'other' ? 'bg-emerald-50 text-emerald-500' :
+                                    'bg-blue-50 text-[#004AAD]'
+                                }`}>
+                                    {item.type || 'Info'}
+                                </span>
                             </div>
                         ))}
                     </div>
