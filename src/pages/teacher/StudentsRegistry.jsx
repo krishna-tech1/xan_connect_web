@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Calendar, Award, MessageCircle, ChevronDown, Search, Loader, Shield } from 'lucide-react';
 import axios from 'axios';
 
-const StudentsRegistry = ({ user, initialFilter }) => {
+const StudentsRegistry = ({ user, initialFilter, onMessageStudent }) => {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -285,7 +285,10 @@ const StudentsRegistry = ({ user, initialFilter }) => {
                                 })()}
                             </div>
 
-                            <button className="w-full mt-10 bg-[#1C2B4E] text-white py-5 rounded-3xl flex items-center justify-center gap-3 font-black text-[14px] shadow-xl shadow-slate-100 hover:bg-[#000] active:scale-[0.98] transition-all group">
+                            <button 
+                                onClick={() => onMessageStudent(selectedStudent)}
+                                className="w-full mt-10 bg-[#1C2B4E] text-white py-5 rounded-3xl flex items-center justify-center gap-3 font-black text-[14px] shadow-xl shadow-slate-100 hover:bg-[#000] active:scale-[0.98] transition-all group"
+                            >
                                 <MessageCircle size={20} className="group-hover:rotate-12 transition-transform" />
                                 Parent Contact Channel
                             </button>

@@ -55,6 +55,7 @@ function App() {
     };
 
     const [studentFilter, setStudentFilter] = useState(null);
+    const [chatTarget, setChatTarget] = useState(null);
 
     if (!user) {
         return <LoginPage onLogin={handleLogin} />;
@@ -62,7 +63,14 @@ function App() {
 
     const handleClassSelect = (cls) => {
         setStudentFilter(cls);
+        setChatTarget(null);
         setActiveTab('students');
+    };
+
+    const handleMessageStudent = (student) => {
+        setChatTarget(student);
+        setStudentFilter(null);
+        setActiveTab('messages');
     };
 
     const renderContent = () => {
@@ -82,11 +90,11 @@ function App() {
                 case 'timetable':
                     return <TeacherTimetable user={user} />;
                 case 'students':
-                    return <StudentsRegistry user={user} initialFilter={studentFilter} />;
+                    return <StudentsRegistry user={user} initialFilter={studentFilter} onMessageStudent={handleMessageStudent} />;
                 case 'library':
                     return <Library />;
                 case 'messages':
-                    return <MessagesTab user={user} />;
+                    return <MessagesTab user={user} initialTarget={chatTarget} onClearTarget={() => setChatTarget(null)} />;
                 case 'documents':
                     return <DocumentsTab />;
                 case 'reports':
@@ -125,7 +133,7 @@ function App() {
             case 'announcements':
                 return <AnnouncementsTab user={user} />;
             case 'messages':
-                return <MessagesTab />;
+                return <MessagesTab user={user} initialTarget={chatTarget} onClearTarget={() => setChatTarget(null)} />;
             case 'documents':
                 return <DocumentsTab />;
             case 'fees':
