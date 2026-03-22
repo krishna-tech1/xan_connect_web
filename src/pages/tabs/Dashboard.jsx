@@ -8,7 +8,7 @@ const DashboardTab = ({ user, onTabChange }) => {
     const [overallGrade, setOverallGrade] = useState('...');
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
 
-    const studentId = user?.details?.studentId || user?.id;
+    const studentId = user?.studentId || user?.id;
 
     useEffect(() => {
         if (!studentId) return;
@@ -148,10 +148,12 @@ const DashboardTab = ({ user, onTabChange }) => {
             <div className="bg-white p-6 rounded-[28px] border border-slate-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex items-center justify-between mb-10 group hover:border-[#004AAD]/10 transition-all duration-500">
                 <div className="flex items-center gap-6">
                     <div className="relative">
-                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-50 to-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shadow-inner">
-                            <svg className="w-10 h-10 text-slate-200" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4z" />
-                            </svg>
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-50 to-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shadow-inner relative group">
+                            <img 
+                                src={user?.photo_url || `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=004AAD&color=fff&bold=true&size=128`} 
+                                alt="Student"
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full shadow-sm"></div>
                     </div>
@@ -160,23 +162,21 @@ const DashboardTab = ({ user, onTabChange }) => {
                             <h3 className="text-2xl font-black text-[#1C2B4E]">{user?.name}</h3>
                             <span className="bg-blue-50 text-[#004AAD] px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-blue-100/50">Active</span>
                         </div>
-                        <p className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                            Class {user?.details?.class}-{user?.details?.section}
-                            <span className="w-1 h-1 rounded-full bg-slate-200"></span>
-                            Roll No: {user?.details?.rollNumber}
-                            <span className="w-1 h-1 rounded-full bg-slate-200"></span>
-                            ID: {user?.details?.studentId}
+                        <p className="text-xs font-bold text-slate-400 flex items-center gap-2 mt-1">
+                            <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100">Class: {user?.class || 'N/A'}-{user?.section || ''}</span>
+                            <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100">Roll No: {user?.rollNumber || 'N/A'}</span>
+                            <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-100">ID: {user?.studentId || user?.id || 'N/A'}</span>
                         </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="hidden md:flex flex-col items-end mr-4">
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Attendance Today</span>
-                        <span className="text-sm font-black text-green-500">Present</span>
+                    <div className="flex flex-col items-end">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 opacity-70">Today's Presence</span>
+                        <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 shadow-sm">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span className="text-sm font-black text-emerald-600">Present</span>
+                        </div>
                     </div>
-                    <button className="bg-[#004AAD] hover:bg-[#003991] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-blue-100 transition-all active:scale-95">
-                        View Full Profile
-                    </button>
                 </div>
             </div>
 
