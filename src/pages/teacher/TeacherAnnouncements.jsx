@@ -105,7 +105,7 @@ const TeacherAnnouncements = ({ user }) => {
         if (!window.confirm('Delete this broadcast?')) return;
         try {
             await axios.delete(`${API_URL}/api/portal/announcements/${id}`, {
-                params: { userId: user.id }
+                params: { userId: user.id, role: 'teacher' }
             });
             fetchAnnouncements();
         } catch (err) {
