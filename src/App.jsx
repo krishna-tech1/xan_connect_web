@@ -26,6 +26,7 @@ import Library from './pages/teacher/Library';
 import Reports from './pages/teacher/Reports';
 import StudentsRegistry from './pages/teacher/StudentsRegistry';
 import LeaveRequests from './pages/teacher/LeaveRequests';
+import TeacherAnnouncements from './pages/teacher/TeacherAnnouncements';
 
 function App() {
     const [user, setUser] = useState(null);
@@ -53,9 +54,16 @@ function App() {
         setShowLogoutModal(false);
     };
 
+    const [studentFilter, setStudentFilter] = useState(null);
+
     if (!user) {
         return <LoginPage onLogin={handleLogin} />;
     }
+
+    const handleClassSelect = (cls) => {
+        setStudentFilter(cls);
+        setActiveTab('students');
+    };
 
     const renderContent = () => {
         // Teacher Specific Views
@@ -64,7 +72,7 @@ function App() {
                 case 'dashboard':
                     return <TeacherDashboard user={user} />;
                 case 'classes':
-                    return <MyClasses />;
+                    return <MyClasses user={user} onSelectClass={handleClassSelect} />;
                 case 'attendance_mark':
                     return <MarkAttendance user={user} />;
                 case 'exams':
@@ -74,7 +82,7 @@ function App() {
                 case 'timetable':
                     return <TeacherTimetable user={user} />;
                 case 'students':
-                    return <StudentsRegistry user={user} />;
+                    return <StudentsRegistry user={user} initialFilter={studentFilter} />;
                 case 'library':
                     return <Library />;
                 case 'messages':
@@ -83,6 +91,8 @@ function App() {
                     return <DocumentsTab />;
                 case 'reports':
                     return <Reports />;
+                case 'announcements':
+                    return <TeacherAnnouncements user={user} />;
                 case 'leaves':
                     return <LeaveRequests user={user} />;
                 case 'settings':

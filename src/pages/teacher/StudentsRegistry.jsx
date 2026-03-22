@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { User, Calendar, Award, MessageCircle, ChevronDown, Search, Loader, Shield } from 'lucide-react';
 import axios from 'axios';
 
-const StudentsRegistry = ({ user }) => {
+const StudentsRegistry = ({ user, initialFilter }) => {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedClass, setSelectedClass] = useState('');
+    const [selectedClass, setSelectedClass] = useState(initialFilter || '');
     const [classOptions, setClassOptions] = useState([]);
     
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
@@ -16,33 +16,42 @@ const StudentsRegistry = ({ user }) => {
             const options = [];
             
             // 1. Add Class Teacher role (Default)
-            if (user.class_teacher && user.class_teacher !== 'NONE') {
+            const ct = String(user.class_teacher || '').trim();
+            if (ct && ct.toUpperCase() !== 'NONE' && ct.toLowerCase() !== 'null') {
                 options.push({ 
-                    label: `${user.class_teacher} (Class Teacher)`, 
-                    value: user.class_teacher 
+                    label: `${ct} (Class Teacher)`, 
+                    value: ct 
                 });
             }
 
             // 2. Add Subject Teacher roles
-            if (user.subjects && Array.isArray(user.subjects)) {
-                user.subjects.forEach(sub => {
-                    if (sub.class && !options.find(o => o.value === sub.class)) {
-                        options.push({ 
-                            label: `${sub.class} (${sub.subject})`, 
-                            value: sub.class 
-                        });
-                    }
-                });
-            }
+            const subjectsData = user.subjects || user.subjects_list;
+            const subjects = Array.isArray(subjectsData) 
+                ? subjectsData 
+                : (typeof subjectsData === 'string' ? JSON.parse(subjectsData || '[]') : []);
+
+            subjects.forEach(sub => {
+                const className = sub.class || sub.className;
+                if (className && !options.find(o => o.value === className)) {
+                    options.push({ 
+                        label: `${className} (${sub.subject})`, 
+                        value: className 
+                    });
+                }
+            });
 
             setClassOptions(options);
-            if (options.length > 0) {
+            
+            // Priority: Initial Filter > First Option
+            if (initialFilter && options.find(o => o.value === initialFilter)) {
+                setSelectedClass(initialFilter);
+            } else if (options.length > 0 && !selectedClass) {
                 setSelectedClass(options[0].value);
-            } else {
+            } else if (options.length === 0) {
                 setLoading(false);
             }
         }
-    }, [user]);
+    }, [user, initialFilter]);
 
     useEffect(() => {
         if (selectedClass) {
