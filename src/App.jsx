@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import LoginPage from './pages/Login';
 import Sidebar from './components/Sidebar';
 import DashboardTab from './pages/tabs/Dashboard';
@@ -63,15 +66,15 @@ function App() {
                 case 'classes':
                     return <MyClasses />;
                 case 'attendance_mark':
-                    return <MarkAttendance />;
+                    return <MarkAttendance user={user} />;
                 case 'exams':
-                    return <ExamsMarks />;
+                    return <ExamsMarks user={user} />;
                 case 'homework_assign':
                     return <AssignHomework />;
                 case 'timetable':
                     return <TeacherTimetable user={user} />;
                 case 'students':
-                    return <StudentsRegistry />;
+                    return <StudentsRegistry user={user} />;
                 case 'library':
                     return <Library />;
                 case 'messages':
@@ -179,45 +182,11 @@ function App() {
                         )}
 
                         {user.role === 'teacher' && activeTab === 'attendance_mark' && (
-                            <div className="flex items-center gap-6">
-                                <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight">Attendance</h2>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-[12px] font-bold text-slate-300 uppercase tracking-tight">Class</span>
-                                    <div className="relative group">
-                                        <select className="bg-white border border-slate-100 text-[#1C2B4E] px-4 py-2 rounded-xl font-black text-[13px] focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all appearance-none cursor-pointer shadow-sm pr-9 min-w-[120px]">
-                                            <option>10 - A</option>
-                                            <option>10 - B</option>
-                                            <option>12 - C</option>
-                                        </select>
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-[#004AAD] transition-colors">
-                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight">Attendance</h2>
                         )}
 
                         {user.role === 'teacher' && activeTab === 'exams' && (
-                            <div className="flex items-center gap-6">
-                                <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight">Exams & Marks</h2>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-[12px] font-bold text-slate-300 uppercase tracking-tight">Class</span>
-                                    <div className="relative group">
-                                        <select className="bg-white border border-slate-100 text-[#1C2B4E] px-4 py-2 rounded-xl font-black text-[13px] focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all appearance-none cursor-pointer shadow-sm pr-9 min-w-[120px]">
-                                            <option>10 - A</option>
-                                            <option>10 - B</option>
-                                            <option>12 - C</option>
-                                        </select>
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-[#004AAD] transition-colors">
-                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <h2 className="text-[20px] font-black text-[#1C2B4E] tracking-tight">Exams & Marks</h2>
                         )}
 
                         {user.role === 'teacher' && activeTab === 'homework_assign' && (
@@ -340,6 +309,7 @@ function App() {
           background: #CBD5E1;
         }
       `}} />
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop />
         </div>
     );
 }

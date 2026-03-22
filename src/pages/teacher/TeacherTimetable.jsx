@@ -201,6 +201,7 @@ const TeacherTimetable = ({ user }) => {
                                                             <input 
                                                                 type="text"
                                                                 placeholder="Subject"
+                                                                maxLength={10}
                                                                 className="w-full bg-white border border-slate-100 rounded-lg px-2 py-1 text-[11px] font-black text-[#1C2B4E] outline-none focus:border-blue-400"
                                                                 value={slot?.subject || ''}
                                                                 onChange={(e) => updateSlot(day, row.period, 'subject', e.target.value)}
@@ -208,6 +209,7 @@ const TeacherTimetable = ({ user }) => {
                                                             <input 
                                                                 type="text"
                                                                 placeholder="Class"
+                                                                maxLength={10}
                                                                 className="w-full bg-white border border-slate-100 rounded-lg px-2 py-1 text-[9px] font-bold text-slate-400 uppercase outline-none focus:border-blue-400"
                                                                 value={slot?.class || ''}
                                                                 onChange={(e) => updateSlot(day, row.period, 'class', e.target.value)}
