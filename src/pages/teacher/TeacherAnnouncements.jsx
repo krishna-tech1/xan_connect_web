@@ -104,10 +104,12 @@ const TeacherAnnouncements = ({ user }) => {
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this broadcast?')) return;
         try {
-            await axios.delete(`${API_URL}/api/portal/announcements/${id}`);
+            await axios.delete(`${API_URL}/api/portal/announcements/${id}`, {
+                params: { userId: user.id }
+            });
             fetchAnnouncements();
         } catch (err) {
-            alert('Failed to delete');
+            alert(err.response?.data?.message || 'Failed to delete');
         }
     };
 
@@ -151,24 +153,26 @@ const TeacherAnnouncements = ({ user }) => {
 
                             {/* 2. Subject */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">2. Subject Headline:</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1 leading-none">2. Subject Headline ({title.length}/25):</label>
                                 <input 
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="e.g. Test Results Uploaded"
+                                    maxLength={25}
+                                    placeholder="Max 25 Characters"
                                     className="w-full bg-slate-50 border-2 border-transparent focus:border-[#004AAD] rounded-2xl px-6 py-4 font-bold text-sm outline-none transition-all placeholder:text-slate-200"
                                 />
                             </div>
 
                             {/* 3. Description */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">3. Message Description:</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1 leading-none">3. Message Description ({message.length}/75):</label>
                                 <textarea 
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
-                                    placeholder="Enter details here..."
-                                    rows="4"
+                                    maxLength={75}
+                                    placeholder="Max 75 Characters"
+                                    rows="3"
                                     className="w-full bg-slate-50 border-2 border-transparent focus:border-[#004AAD] rounded-2xl px-6 py-4 font-bold text-sm outline-none transition-all resize-none placeholder:text-slate-200"
                                 ></textarea>
                             </div>
@@ -253,7 +257,7 @@ const TeacherAnnouncements = ({ user }) => {
                                                 <p className="text-[12px] font-bold text-slate-300 tracking-tight">Post Date: {new Date(ann.created_at).toLocaleDateString()}</p>
                                             </div>
                                         </div>
-                                        {view === 'sent' && (
+                                        {ann.sender_id === user.id && (
                                             <button 
                                                 onClick={() => handleDelete(ann.id)}
                                                 className="p-3 text-slate-100 hover:bg-rose-50 hover:text-rose-500 rounded-2xl transition-all"
