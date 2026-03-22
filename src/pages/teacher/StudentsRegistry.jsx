@@ -8,8 +8,41 @@ const StudentsRegistry = ({ user, initialFilter }) => {
     const [loading, setLoading] = useState(true);
     const [selectedClass, setSelectedClass] = useState(initialFilter || '');
     const [classOptions, setClassOptions] = useState([]);
+    const [studentAttendance, setStudentAttendance] = useState(null);
+    const [studentMarks, setStudentMarks] = useState([]);
     
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
+
+    useEffect(() => {
+        if (selectedStudent) {
+            const fetchStudentDetails = async () => {
+                try {
+                    // Fetch Attendance
+                    const attRes = await axios.get(`${API_URL}/api/portal/student-attendance/${selectedStudent.studentId}`);
+                    const records = attRes.data;
+                    const present = records.filter(r => r.status === 'Present').length;
+                    setStudentAttendance(records.length > 0 ? Math.round((present / records.length) * 100) : 'N/A');
+
+                    // Fetch Marks
+                    const marksRes = await axios.get(`${API_URL}/api/portal/student-marks/${selectedStudent.studentId}`);
+                    const subjectsData = user.subjects || user.subjects_list;
+                    const teacherSubjects = Array.isArray(subjectsData) 
+                        ? subjectsData.map(s => s.subject.toLowerCase())
+                        : (typeof subjectsData === 'string' ? JSON.parse(subjectsData || '[]').map(s => s.subject.toLowerCase()) : []);
+
+                    // Filter marks to only show HIS/HER subjects
+                    const filteredMarks = marksRes.data.filter(m => teacherSubjects.includes(m.subject.toLowerCase()));
+                    setStudentMarks(filteredMarks);
+                } catch (err) {
+                    console.error('Error fetching student stats:', err);
+                }
+            };
+            fetchStudentDetails();
+        } else {
+            setStudentAttendance(null);
+            setStudentMarks([]);
+        }
+    }, [selectedStudent]);
 
     useEffect(() => {
         if (user) {
@@ -218,17 +251,29 @@ const StudentsRegistry = ({ user, initialFilter }) => {
 
                             <div className="w-full space-y-4">
                                 {[
-                                    { label: 'Attendance', value: '92%', icon: Calendar, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                                    { label: 'Current Score', value: '88/100', icon: Award, color: 'text-[#004AAD]', bg: 'bg-blue-50' },
-                                    { label: 'Date of Birth', value: selectedStudent.dob || 'Not Set', icon: User, color: 'text-orange-500', bg: 'bg-orange-50' }
-                                ].map((item, idx) => (
-                                    <div key={idx} className="bg-[#F8FAFC] rounded-3xl p-6 flex items-center gap-6 group hover:bg-slate-100/50 transition-all border border-white hover:border-slate-50">
-                                        <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
+                                    { label: 'Attendance', value: studentAttendance === 'N/A' ? 'No Records' : `${studentAttendance}%`, icon: Calendar, color: 'text-emerald-500', bg: 'bg-emerald-50', show: true },
+                                    { 
+                                        label: 'Subject Score', 
+                                        value: studentMarks.length > 0 ? `${studentMarks[0].marks}/100` : 'None', 
+                                        icon: Award, 
+                                        color: 'text-[#004AAD]', 
+                                        bg: 'bg-blue-50',
+                                        show: studentMarks.length > 0 
+                                    },
+                                    { label: 'Date of Birth', value: selectedStudent.dob || 'Not Set', icon: User, color: 'text-orange-500', bg: 'bg-orange-50', show: true }
+                                ].filter(item => item.show).map((item, idx) => (
+                                    <div key={idx} className="bg-[#F8FAFC] rounded-3xl p-6 flex items-center gap-6 group hover:bg-slate-100/50 transition-all border border-white hover:border-slate-100/50">
+                                        <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform border border-white`}>
                                             <item.icon size={22} />
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">{item.label}</p>
-                                            <p className="text-[16px] font-black text-[#1C2B4E]">{item.value}</p>
+                                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5 font-inter">{item.label}</p>
+                                            <p className="text-[16px] font-black text-[#1C2B4E] font-inter">
+                                                {item.value}
+                                                {item.label === 'Subject Score' && studentMarks.length > 1 && (
+                                                    <span className="text-[10px] font-bold ml-2 text-slate-300">({studentMarks[0].subject})</span>
+                                                )}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
