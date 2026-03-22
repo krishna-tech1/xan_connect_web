@@ -120,9 +120,9 @@ const ExamsMarks = ({ user }) => {
             // Prepare records for upsert (separate records for U1, U2, U3)
             const records = [];
             students.forEach(s => {
-                if (s.u1) records.push({ studentId: s.studentId, className, section, subject, examType: 'U1', marks: s.u1, remarks: s.u1_remarks });
-                if (s.u2) records.push({ studentId: s.studentId, className, section, subject, examType: 'U2', marks: s.u2, remarks: s.u2_remarks });
-                if (s.u3) records.push({ studentId: s.studentId, className, section, subject, examType: 'U3', marks: s.u3, remarks: s.u3_remarks });
+                if (s.u1) records.push({ studentId: s.studentId, className, section, subject, examType: 'U1', marks: s.u1, remarks: s.u1_remarks, staffId: user.id });
+                if (s.u2) records.push({ studentId: s.studentId, className, section, subject, examType: 'U2', marks: s.u2, remarks: s.u2_remarks, staffId: user.id });
+                if (s.u3) records.push({ studentId: s.studentId, className, section, subject, examType: 'U3', marks: s.u3, remarks: s.u3_remarks, staffId: user.id });
             });
 
             if (records.length === 0) {
