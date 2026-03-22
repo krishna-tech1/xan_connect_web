@@ -1,32 +1,72 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const ResultsTab = () => {
+const ResultsTab = ({ user }) => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
+    const [marks, setMarks] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const studentId = user?.details?.studentId || user?.id;
+
+    useEffect(() => {
+        if (!studentId) return;
+        const fetchMarks = async () => {
+            setLoading(true);
+            try {
+                const res = await axios.get(`${API_URL}/api/portal/student-marks/${studentId}`);
+                setMarks(res.data);
+            } catch (err) {
+                console.error('Marks fetch error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMarks();
+    }, [studentId]);
+
+    // Group marks by subject
+    const subjects = {};
+    marks.forEach(m => {
+        if (!subjects[m.subject]) {
+            subjects[m.subject] = { subject: m.subject, teacher_name: m.teacher_name, exams: {} };
+        }
+        subjects[m.subject].exams[m.exam_type] = { marks: m.marks, remarks: m.remarks };
+    });
+    const subjectRows = Object.values(subjects);
+
+    // Compute grade from average
+    const computeGrade = (exams) => {
+        const vals = Object.values(exams).map(e => parseFloat(e.marks)).filter(v => !isNaN(v));
+        if (!vals.length) return '—';
+        const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+        if (avg >= 90) return 'A+';
+        if (avg >= 80) return 'A';
+        if (avg >= 70) return 'B+';
+        if (avg >= 60) return 'B';
+        if (avg >= 50) return 'C';
+        return 'D';
+    };
+
+    // Top-level stats
+    const allMarksVals = marks.map(m => parseFloat(m.marks)).filter(v => !isNaN(v));
+    const averageScore = allMarksVals.length
+        ? Math.round(allMarksVals.reduce((a, b) => a + b, 0) / allMarksVals.length)
+        : 0;
+
+    const overallGrade = computeGrade(Object.fromEntries(allMarksVals.map((v, i) => [i, { marks: v }])));
+
     const stats = [
-        { label: 'Average Score', value: '87%', color: 'text-slate-700' },
-        { label: 'Overall Grade', value: 'A', color: 'text-green-600' },
-        { label: 'Class Rank', value: '5 th', color: 'text-blue-600' },
-        { label: 'Subjects', value: '6', color: 'text-slate-700' },
+        { label: 'Average Score', value: loading ? '...' : `${averageScore}%`, color: 'text-slate-700' },
+        { label: 'Overall Grade', value: loading ? '...' : overallGrade, color: 'text-green-600' },
+        { label: 'Subjects', value: loading ? '...' : subjectRows.length, color: 'text-slate-700' },
+        { label: 'Total Exams', value: loading ? '...' : marks.length, color: 'text-blue-600' },
     ];
 
-    const subjectResults = [
-        { subject: 'Mathematics', teacher: 'Ms. Sarah Khan', u1: '96/100', u2: '86/100', grade: 'A+', remarks: 'Excellent progress in algebra.' },
-        { subject: 'Science', teacher: 'Johnson', u1: '90/100', u2: '90/100', grade: 'A+', remarks: 'Good lab work. Needs Improvement in theory.' },
-        { subject: 'English', teacher: 'Maddison', u1: '88/100', u2: '98/100', grade: 'A', remarks: 'Writing skills improving steadily.' },
-        { subject: 'Hindi', teacher: 'Anbu', u1: '75/100', u2: '75/100', grade: 'B+', remarks: 'Need improvement to form sentence correctly.' },
-        { subject: 'Computer Science', teacher: 'Anbu', u1: '81/100', u2: '89/100', grade: 'A', remarks: 'Excellent progress in algebra.' },
-    ];
-
-    const performanceTrends = [
-        { subject: 'Mathematics', trend: '+3', value: '90%', type: 'up' },
-        { subject: 'Science', trend: '+3', value: '89%', type: 'up' },
-        { subject: 'English', trend: '+2', value: '90%', type: 'up' },
-        { subject: 'Hindi', trend: '+4', value: '79%', type: 'down' },
-        { subject: 'Computer Science', trend: '+1', value: '86%', type: 'up' },
-    ];
+    const examTypes = [...new Set(marks.map(m => m.exam_type))].sort();
 
     return (
         <div className="animate-in fade-in duration-500 w-full font-inter">
-            {/* Top Stats Cards */}
+            {/* Top Stats */}
             <div className="flex flex-wrap items-center gap-4 mb-8">
                 <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
                     {stats.map((stat, i) => (
@@ -36,12 +76,6 @@ const ResultsTab = () => {
                         </div>
                     ))}
                 </div>
-                <button className="bg-[#004AAD] hover:bg-[#003991] text-white px-6 py-3.5 rounded-xl font-bold flex items-center gap-3 shadow-lg shadow-blue-100 transition-all text-sm h-fit">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download Report
-                </button>
             </div>
 
             {/* Subject-wise Results Table */}
@@ -54,59 +88,84 @@ const ResultsTab = () => {
                     </div>
                     <h3 className="text-base font-black text-[#1C2B4E]">Subject-wise Results</h3>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="bg-slate-50/20">
-                                <th className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">Subject</th>
-                                <th className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">U1</th>
-                                <th className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">U2</th>
-                                <th className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">Grade</th>
-                                <th className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                            {subjectResults.map((row, i) => (
-                                <tr key={i} className="group hover:bg-slate-50/30 transition-colors">
-                                    <td className="px-8 py-5">
-                                        <p className="font-bold text-[#1C2B4E] uppercase text-sm">{row.subject}</p>
-                                        <p className="text-[10px] font-bold text-slate-300">{row.teacher}</p>
-                                    </td>
-                                    <td className="px-8 py-5 text-sm font-black text-slate-600">{row.u1}</td>
-                                    <td className="px-8 py-5 text-sm font-black text-slate-600">{row.u2}</td>
-                                    <td className="px-8 py-5">
-                                        <span className="bg-blue-50 text-[#004AAD] px-3 py-1.5 rounded-lg text-[11px] font-black border border-blue-100/50">
-                                            {row.grade}
-                                        </span>
-                                    </td>
-                                    <td className="px-8 py-5 text-[12px] font-semibold text-slate-400">
-                                        {row.remarks}
-                                    </td>
+
+                {loading ? (
+                    <div className="p-12 text-center text-slate-300 font-bold text-sm">Loading results...</div>
+                ) : subjectRows.length === 0 ? (
+                    <div className="p-12 text-center text-slate-300 font-bold text-sm">No marks have been entered yet.</div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-50/20">
+                                    <th className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">Subject</th>
+                                    {examTypes.map(et => (
+                                        <th key={et} className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">{et}</th>
+                                    ))}
+                                    <th className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">Grade</th>
+                                    <th className="px-8 py-4 text-[11px] font-bold text-slate-300 uppercase tracking-wider">Remarks</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {subjectRows.map((row, i) => {
+                                    const grade = computeGrade(row.exams);
+                                    // Use the remarks from the last exam_type for that subject
+                                    const lastRemarks = Object.values(row.exams).slice(-1)[0]?.remarks || '—';
+                                    return (
+                                        <tr key={i} className="group hover:bg-slate-50/30 transition-colors">
+                                            <td className="px-8 py-5">
+                                                <p className="font-bold text-[#1C2B4E] uppercase text-sm">{row.subject}</p>
+                                                <p className="text-[10px] font-bold text-slate-300 mt-0.5">
+                                                    {row.teacher_name && row.teacher_name !== 'N/A' ? `by ${row.teacher_name}` : ''}
+                                                </p>
+                                            </td>
+                                            {examTypes.map(et => (
+                                                <td key={et} className="px-8 py-5 text-sm font-black text-slate-600">
+                                                    {row.exams[et] ? `${row.exams[et].marks}` : '—'}
+                                                </td>
+                                            ))}
+                                            <td className="px-8 py-5">
+                                                <span className="bg-blue-50 text-[#004AAD] px-3 py-1.5 rounded-lg text-[11px] font-black border border-blue-100/50">
+                                                    {grade}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-[12px] font-semibold text-slate-400">
+                                                {lastRemarks}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             {/* Performance Trend */}
-            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm mb-12">
-                <h4 className="text-base font-black text-[#1C2B4E] mb-8">Performance Trend</h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    {performanceTrends.map((item, i) => (
-                        <div key={i} className="bg-[#F8FAFC] p-4 rounded-xl border border-slate-100/50 flex flex-col items-center justify-center text-center">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-2 opacity-60">{item.subject}</p>
-                            <div className={`flex items-center gap-1.5 mb-1.5 ${item.type === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                                <svg className={`w-3.5 h-3.5 ${item.type === 'down' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
-                                </svg>
-                                <span className="text-[11px] font-black">{item.trend}</span>
-                            </div>
-                            <p className="text-2xl font-black text-[#1C2B4E] leading-none">{item.value}</p>
-                        </div>
-                    ))}
+            {subjectRows.length > 0 && (
+                <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm mb-12">
+                    <h4 className="text-base font-black text-[#1C2B4E] mb-8">Performance Overview</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {subjectRows.map((row, i) => {
+                            const vals = Object.values(row.exams).map(e => parseFloat(e.marks)).filter(v => !isNaN(v));
+                            const avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+                            const isGood = avg >= 75;
+                            return (
+                                <div key={i} className="bg-[#F8FAFC] p-4 rounded-xl border border-slate-100/50 flex flex-col items-center justify-center text-center">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-2 opacity-60 line-clamp-1">{row.subject}</p>
+                                    <div className={`flex items-center gap-1.5 mb-1 ${isGood ? 'text-green-500' : 'text-red-500'}`}>
+                                        <svg className={`w-3.5 h-3.5 ${!isGood ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
+                                        </svg>
+                                        <span className="text-[11px] font-black">{computeGrade(row.exams)}</span>
+                                    </div>
+                                    <p className="text-2xl font-black text-[#1C2B4E] leading-none">{avg}%</p>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

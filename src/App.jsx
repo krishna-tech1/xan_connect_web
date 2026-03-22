@@ -115,15 +115,15 @@ function App() {
             case 'dashboard':
                 return <DashboardTab user={user} onTabChange={setActiveTab} />;
             case 'attendance':
-                return <AttendanceTab />;
+                return <AttendanceTab user={user} />;
             case 'results':
-                return <ResultsTab />;
+                return <ResultsTab user={user} />;
             case 'timetable':
                 return <TimetableTab />;
             case 'homework':
                 return <HomeworkTab />;
             case 'announcements':
-                return <AnnouncementsTab />;
+                return <AnnouncementsTab user={user} />;
             case 'messages':
                 return <MessagesTab />;
             case 'documents':
