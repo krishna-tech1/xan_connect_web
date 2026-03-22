@@ -260,7 +260,7 @@ const TeacherAnnouncements = ({ user }) => {
                                         {ann.sender_id === user.id && (
                                             <button 
                                                 onClick={() => handleDelete(ann.id)}
-                                                className="p-3 text-slate-100 hover:bg-rose-50 hover:text-rose-500 rounded-2xl transition-all"
+                                                className="p-3 text-slate-400 hover:bg-rose-50 hover:text-rose-500 rounded-2xl transition-all"
                                             >
                                                 <Trash2 size={20} />
                                             </button>
