@@ -96,7 +96,7 @@ function App() {
                 case 'messages':
                     return <MessagesTab user={user} initialTarget={chatTarget} onClearTarget={() => setChatTarget(null)} />;
                 case 'documents':
-                    return <DocumentsTab />;
+                    return <DocumentsTab user={user} />;
                 case 'reports':
                     return <Reports />;
                 case 'announcements':
@@ -135,7 +135,7 @@ function App() {
             case 'messages':
                 return <MessagesTab user={user} initialTarget={chatTarget} onClearTarget={() => setChatTarget(null)} />;
             case 'documents':
-                return <DocumentsTab />;
+                return <DocumentsTab user={user} />;
             case 'fees':
                 return <FeesTab />;
             case 'transport':

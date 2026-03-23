@@ -37,27 +37,6 @@ const TeacherDashboard = ({ user, onTabChange }) => {
         { time: '1:00 pm', subject: 'Calculus', class: '12 - B' },
         { time: '2:00 pm', subject: 'Mathematics', class: '10 - A' }
     ];
-
-    const pendingWorks = [
-        { title: 'Grade 10-A Math Test Papers', due: 'Due: Today', color: 'bg-rose-500' },
-        { title: 'Upload homework for 9-C', due: 'Due: Today', color: 'bg-rose-500' },
-        { title: 'Submit 11-A attendance correction', due: 'Due: Tomorrow', color: 'bg-orange-500' },
-        { title: 'Review 12-A project submissions', due: 'Due: Mar 3', color: 'bg-emerald-500' }
-    ];
-
-    const announcements = [
-        { title: 'Parent-Teacher Meeting on March 5th', time: '2 hours ago', type: 'Warning' },
-        { title: 'Annual Sports Day — Volunteers Needed', time: '5 hours ago', type: 'Info' },
-        { title: 'Mid-term exam schedule released', time: '1 day ago', type: 'Warning' }
-    ];
-
-    const snapshot = [
-        { label: 'Avg. Score', value: '78%', trend: '+3%', trendColor: 'text-emerald-500' },
-        { label: 'Pass Rate', value: '89%', trend: '+1%', trendColor: 'text-emerald-500' },
-        { label: 'Attendance Avg.', value: '94%', trend: '+2%', trendColor: 'text-emerald-500' },
-        { label: 'Homework Completion', value: '79%', trend: '-2', trendColor: 'text-rose-500' }
-    ];
-
     return (
         <div className="animate-in fade-in duration-700 w-full font-inter space-y-8 pb-12">
             {/* Top Stats Cards */}
@@ -82,8 +61,8 @@ const TeacherDashboard = ({ user, onTabChange }) => {
                 ))}
             </div>
 
-            {/* Middle Section: Schedule & Tasks */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Middle Section: Schedule */}
+            <div className="grid grid-cols-1 gap-8">
                 {/* Today's Schedule */}
                 <div className="bg-white rounded-[16px] border border-slate-100 shadow-sm p-8">
                     <h3 className="text-[16px] font-black text-[#1C2B4E] mb-8">Today's Schedule</h3>
@@ -110,22 +89,6 @@ const TeacherDashboard = ({ user, onTabChange }) => {
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-                </div>
-
-                {/* Pending Works */}
-                <div className="bg-white rounded-[16px] border border-slate-100 shadow-sm p-8">
-                    <h3 className="text-[16px] font-black text-[#1C2B4E] mb-8">Pending Works</h3>
-                    <div className="space-y-6">
-                        {pendingWorks.map((work, i) => (
-                            <div key={i} className="flex gap-4">
-                                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${work.color}`}></div>
-                                <div>
-                                    <p className="text-[14px] font-black text-[#1C2B4E] leading-tight">{work.title}</p>
-                                    <p className="text-[11px] font-bold text-slate-300 mt-1 uppercase tracking-tight">{work.due}</p>
-                                </div>
-                            </div>
-                        ))}
                     </div>
                 </div>
             </div>
@@ -161,29 +124,6 @@ const TeacherDashboard = ({ user, onTabChange }) => {
                             }`}>
                                 {ann.type || 'Info'}
                             </span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Performance Snapshot */}
-            <div className="bg-white rounded-[16px] border border-slate-100 shadow-sm p-8">
-                <h3 className="text-[16px] font-black text-[#1C2B4E] mb-8">Performance Snapshot</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                    {snapshot.map((item, i) => (
-                        <div key={i} className="bg-[#F8FAFC] p-6 rounded-[12px] border border-slate-50 flex flex-col items-center justify-center text-center">
-                            <p className="text-[11px] font-black text-slate-300 uppercase tracking-widest mb-3 leading-none">{item.label}</p>
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <svg className={`w-3 h-3 ${item.trendColor}`} fill="currentColor" viewBox="0 0 20 20">
-                                    {item.trend.includes('+') ? (
-                                        <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
-                                    ) : (
-                                        <path fillRule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 4.707 6.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0L11 9.414 14.586 13H12z" clipRule="evenodd" />
-                                    )}
-                                </svg>
-                                <span className={`text-[12px] font-black ${item.trendColor}`}>{item.trend}</span>
-                            </div>
-                            <p className="text-3xl font-black text-[#1C2B4E]">{item.value}</p>
                         </div>
                     ))}
                 </div>
