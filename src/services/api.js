@@ -22,7 +22,9 @@ apiClient.interceptors.request.use(config => {
 
 export const portalAPI = {
     login: (credentials) => apiClient.post('/login', credentials),
-    getProfile: () => apiClient.get('/profile')
+    getProfile: () => apiClient.get('/profile'),
+    getNotifications: (userId) => apiClient.get(`/notifications/${userId}`),
+    markNotificationRead: (id) => apiClient.patch(`/notifications/read/${id}`)
 };
 
 export default apiClient;

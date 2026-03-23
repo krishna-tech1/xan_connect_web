@@ -14,6 +14,7 @@ import HomeworkTab from './pages/tabs/Homework';
 import AnnouncementsTab from './pages/tabs/Announcements';
 import MessagesTab from './pages/tabs/Messages';
 import DocumentsTab from './pages/tabs/Documents';
+import { portalAPI } from './services/api';
 
 // Teacher Tabs
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
@@ -56,6 +57,35 @@ function App() {
 
     const [studentFilter, setStudentFilter] = useState(null);
     const [chatTarget, setChatTarget] = useState(null);
+    const [notifications, setNotifications] = useState([]);
+    const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            fetchNotifications();
+            // Optional: Set interval to fetch every minute
+            const interval = setInterval(fetchNotifications, 60000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await portalAPI.getNotifications(user.studentId || user.staffId || user.id);
+            setNotifications(res.data || []);
+        } catch (err) {
+            console.error('Failed to fetch notifications');
+        }
+    };
+
+    const handleReadNotification = async (id) => {
+        try {
+            await portalAPI.markNotificationRead(id);
+            fetchNotifications();
+        } catch (err) { }
+    };
+
+    const unreadCount = notifications.filter(n => !n.is_read).length;
 
     if (!user) {
         return <LoginPage onLogin={handleLogin} />;
@@ -241,6 +271,77 @@ function App() {
                     </div>
 
                     <div className="flex items-center gap-8">
+                        {/* Notification Bell */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowNotifDropdown(!showNotifDropdown)}
+                                className={`p-2.5 rounded-[1.25rem] transition-all relative group ${showNotifDropdown ? 'bg-[#004AAD] text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-[#1C2B4E]'}`}
+                            >
+                                <svg className="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 text-white rounded-full text-[10px] font-black flex items-center justify-center border-2 border-white animate-bounce-slow">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {showNotifDropdown && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifDropdown(false)}></div>
+                                    <div className="absolute top-[calc(100%+15px)] right-0 w-[380px] bg-white rounded-[2rem] shadow-2xl border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 ring-1 ring-black/5">
+                                        <div className="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                                            <h3 className="text-[17px] font-black text-[#1C2B4E] tracking-tight">System Alerts</h3>
+                                            <span className="text-[10px] font-black text-[#004AAD] uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full">{unreadCount} New</span>
+                                        </div>
+                                        <div className="max-h-[420px] overflow-y-auto custom-scrollbar p-3">
+                                            {notifications.length === 0 ? (
+                                                <div className="py-16 text-center">
+                                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mx-auto mb-4">
+                                                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0l-2.586 2.586a1 1 0 01-1.414 0L15 13m-3-3V7m0 0l-1.5 1.5M12 7l1.5 1.5" />
+                                                        </svg>
+                                                    </div>
+                                                    <p className="text-slate-400 font-bold text-sm leading-relaxed px-6">Your inbox is clear.<br /><span className="text-[11px] font-medium">Check back later for school updates!</span></p>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col gap-1.5">
+                                                    {notifications.map((n) => (
+                                                        <div 
+                                                            key={n.id} 
+                                                            onClick={() => handleReadNotification(n.id)}
+                                                            className={`p-5 rounded-2xl transition-all cursor-pointer group/item relative ${n.is_read ? 'bg-transparent hover:bg-slate-50' : 'bg-blue-50/40 hover:bg-blue-50/60'}`}
+                                                        >
+                                                            {!n.is_read && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#004AAD] rounded-r-full shadow-[2px_0_10px_rgba(0,74,173,0.3)]"></div>}
+                                                            <div className="flex gap-4">
+                                                                <div className={`shrink-0 w-11 h-11 rounded-1.5xl flex items-center justify-center font-black text-sm shadow-sm ${n.type === 'error' ? 'bg-rose-50 text-rose-500' : n.type === 'warning' ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-[#004AAD]'}`}>
+                                                                    {n.type === 'error' ? '!' : n.type === 'warning' ? '?' : 'i'}
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <p className={`text-[13px] leading-[1.6] ${n.is_read ? 'text-slate-500 font-bold' : 'text-[#1C2B4E] font-black'}`}>
+                                                                        {n.message}
+                                                                    </p>
+                                                                    <span className="text-[10px] font-bold text-slate-300 mt-2 block uppercase tracking-tight">
+                                                                        {new Date(n.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {notifications.length > 0 && (
+                                            <div className="p-5 bg-slate-50/30 border-t border-slate-50 text-center">
+                                                <button className="text-[11px] font-black text-slate-400 uppercase tracking-widest hover:text-[#004AAD] transition-colors">Dismiss All Notifications</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-end text-right">
                                 <span className="text-[12px] font-extrabold text-[#1C2B4E] leading-none">{user.name}</span>
