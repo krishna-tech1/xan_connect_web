@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5056/api/portal';
+const API_BASE_URL = import.meta.env.VITE_API_URL 
+    ? `${import.meta.env.VITE_API_URL}/api/portal` 
+    : 'http://localhost:5056/api/portal';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
