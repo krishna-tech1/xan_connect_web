@@ -100,11 +100,11 @@ const MarkAttendance = ({ user }) => {
                 params: { className, section, date: attendanceDate }
             });
             
-            // Map students to include attendance status (default to Present if null)
+            // Map students to include attendance status (default to Absent if null)
             const mapped = response.data.map(s => ({
                 studentId: s.studentId,
                 name: `${s.firstName} ${s.lastName}`,
-                status: s.status || 'Present',
+                status: s.status || 'Absent',
                 isExisting: !!s.status
             }));
             setStudents(mapped);
