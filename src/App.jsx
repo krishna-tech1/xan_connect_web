@@ -127,7 +127,7 @@ function App() {
             case 'results':
                 return <ResultsTab user={user} />;
             case 'timetable':
-                return <TimetableTab />;
+                return <TimetableTab user={user} />;
             case 'homework':
                 return <HomeworkTab />;
             case 'announcements':

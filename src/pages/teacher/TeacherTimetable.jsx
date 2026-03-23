@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Edit3, Clock, Save, X, Loader, PlusCircle } from 'lucide-react';
+import { Calendar, Clock, Loader } from 'lucide-react';
 import axios from 'axios';
 
+/**
+ * TeacherTimetable Component
+ * 
+ * Read-only view of the academic timetable assigned by Admin.
+ * Teachers can no longer modify their own schedules.
+ */
 const TeacherTimetable = ({ user }) => {
-    const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
     const [timetableData, setTimetableData] = useState({});
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
 
@@ -45,50 +49,6 @@ const TeacherTimetable = ({ user }) => {
         }
     };
 
-    const handleSave = async () => {
-        try {
-            setSaving(true);
-            // Save each day one by one
-            for (const day of days) {
-                const dayData = timetableData[day] || {};
-                await axios.post(`${API_URL}/api/portal/timetable`, {
-                    staffId: user.id,
-                    day: day,
-                    periods: {
-                        period1: dayData.period1,
-                        period2: dayData.period2,
-                        period3: dayData.period3,
-                        period4: dayData.period4,
-                        period5: dayData.period5,
-                        period6: dayData.period6,
-                        period7: dayData.period7
-                    }
-                });
-            }
-            setIsEditing(false);
-            alert('Timetable updated successfully!');
-        } catch (err) {
-            console.error('Error saving timetable:', err);
-            alert('Failed to save timetable changes.');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const updateSlot = (day, period, field, value) => {
-        setTimetableData(prev => {
-            const dayData = prev[day] || {};
-            const periodData = dayData[period] || { subject: '', class: '' };
-            return {
-                ...prev,
-                [day]: {
-                    ...dayData,
-                    [period]: { ...periodData, [field]: value }
-                }
-            };
-        });
-    };
-
     if (loading) {
         return (
             <div className="p-20 flex flex-col items-center justify-center animate-pulse">
@@ -104,37 +64,9 @@ const TeacherTimetable = ({ user }) => {
             <div className="flex justify-between items-end">
                 <div>
                     <h2 className="text-3xl font-black text-[#1C2B4E] tracking-tight">Academic Timetable</h2>
-                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2 italic">
-                        {isEditing ? 'Editing Mode - Make changes and hit Save' : 'Official weekly schedule for the current semester'}
+                    <p className="text-[#0047AB] font-black uppercase tracking-widest text-[10px] mt-2 italic shadow-sm bg-blue-50/50 inline-block px-4 py-1.5 rounded-lg border border-blue-100">
+                        Official weekly schedule assigned by Administration
                     </p>
-                </div>
-                <div className="flex gap-4">
-                    {isEditing ? (
-                        <>
-                            <button 
-                                onClick={() => setIsEditing(false)}
-                                className="bg-slate-100 text-slate-500 px-8 py-4 rounded-2xl font-black text-sm transition-all active:scale-95 flex items-center gap-2 hover:bg-slate-200"
-                            >
-                                <X size={18} /> Cancel
-                            </button>
-                            <button 
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="bg-[#00b341] text-white px-8 py-4 rounded-2xl font-black text-sm shadow-xl shadow-green-100 flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50"
-                            >
-                                {saving ? <Loader className="animate-spin" size={18} /> : <Save size={18} />}
-                                Save Changes
-                            </button>
-                        </>
-                    ) : (
-                        <button 
-                            onClick={() => setIsEditing(true)}
-                            className="bg-[#004AAD] text-white px-8 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-100 flex items-center gap-3 transition-all active:scale-95 group"
-                        >
-                            <Edit3 size={18} className="group-hover:rotate-12 transition-transform" />
-                            Edit / Update Timetable
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -196,26 +128,7 @@ const TeacherTimetable = ({ user }) => {
                                             const slot = timetableData[day]?.[row.period];
                                             return (
                                                 <div key={sIdx} className="h-[100px] relative">
-                                                    {isEditing ? (
-                                                        <div className="h-full rounded-2xl p-2 bg-blue-50/30 border-2 border-dashed border-blue-100 flex flex-col gap-2">
-                                                            <input 
-                                                                type="text"
-                                                                placeholder="Subject"
-                                                                maxLength={10}
-                                                                className="w-full bg-white border border-slate-100 rounded-lg px-2 py-1 text-[11px] font-black text-[#1C2B4E] outline-none focus:border-blue-400"
-                                                                value={slot?.subject || ''}
-                                                                onChange={(e) => updateSlot(day, row.period, 'subject', e.target.value)}
-                                                            />
-                                                            <input 
-                                                                type="text"
-                                                                placeholder="Class"
-                                                                maxLength={10}
-                                                                className="w-full bg-white border border-slate-100 rounded-lg px-2 py-1 text-[9px] font-bold text-slate-400 uppercase outline-none focus:border-blue-400"
-                                                                value={slot?.class || ''}
-                                                                onChange={(e) => updateSlot(day, row.period, 'class', e.target.value)}
-                                                            />
-                                                        </div>
-                                                    ) : slot && (slot.subject || slot.class) ? (
+                                                    {slot && (slot.subject || slot.class) ? (
                                                         <div className={`h-full rounded-3xl p-4 flex flex-col items-center justify-center text-center transition-all bg-[#F8FAFC] border border-white hover:border-blue-100 hover:shadow-xl hover:shadow-blue-50/50 hover:-translate-y-1 group/slot`}>
                                                             <span className="text-[13px] font-black text-[#1C2B4E] group-hover/slot:text-[#004AAD] transition-colors">
                                                                 {slot.subject || '--'}
@@ -241,14 +154,14 @@ const TeacherTimetable = ({ user }) => {
                     </div>
                 </div>
             </div>
-            {/* Legend */}
+            {/* Legend info */}
             <div className="bg-blue-50/50 p-6 rounded-[32px] border border-blue-100/50 flex items-center gap-6">
                 <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#004AAD] shadow-sm">
                     <Calendar size={20} />
                 </div>
                 <div>
-                    <h4 className="text-sm font-black text-[#1C2B4E]">Master Schedule Controls</h4>
-                    <p className="text-[11px] font-bold text-[#0047AB] uppercase tracking-widest mt-0.5 opacity-60 italic">Changes here reflect across your dashboard summary</p>
+                    <h4 className="text-sm font-black text-[#1C2B4E]">Official Schedule</h4>
+                    <p className="text-[11px] font-bold text-[#0047AB] uppercase tracking-widest mt-0.5 opacity-60 italic">If you notice any discrepancies, please contact the Academic Supervisor</p>
                 </div>
             </div>
         </div>
