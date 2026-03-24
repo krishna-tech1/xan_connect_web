@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Calendar, Clock, Loader, Download } from 'lucide-react';
+import { Clock, Loader } from 'lucide-react';
 
 /**
  * Timetable Component for Students
@@ -67,10 +67,7 @@ const Timetable = ({ user }) => {
                         Weekly Academic Schedule for {new Date().getFullYear()}
                     </p>
                 </div>
-                <button className="bg-[#004AAD] text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 flex items-center gap-3 transition-all active:scale-95 group">
-                    <Download size={18} className="group-hover:translate-y-0.5 transition-transform" />
-                    Offline Copy
-                </button>
+
             </div>
 
             {/* Timetable Card */}

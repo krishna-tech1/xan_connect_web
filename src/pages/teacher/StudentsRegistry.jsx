@@ -10,6 +10,7 @@ const StudentsRegistry = ({ user, initialFilter, onMessageStudent }) => {
     const [classOptions, setClassOptions] = useState([]);
     const [studentAttendance, setStudentAttendance] = useState(null);
     const [studentMarks, setStudentMarks] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
 
@@ -57,27 +58,32 @@ const StudentsRegistry = ({ user, initialFilter, onMessageStudent }) => {
                 });
             }
 
-            // 2. Add Subject Teacher roles
-            const subjectsData = user.subjects || user.subjects_list;
-            const subjects = Array.isArray(subjectsData) 
-                ? subjectsData 
-                : (typeof subjectsData === 'string' ? JSON.parse(subjectsData || '[]') : []);
-
             subjects.forEach(sub => {
-                const className = sub.class || sub.className;
-                if (className && !options.find(o => o.value === className)) {
-                    options.push({ 
-                        label: `${className} (${sub.subject})`, 
-                        value: className 
-                    });
+                const className = (sub.class || sub.className || sub.grade || '').trim();
+                if (className) {
+                    const existing = options.find(o => o.value.toLowerCase() === className.toLowerCase());
+                    if (!existing) {
+                        options.push({ 
+                            label: `${className} (${sub.subject})`, 
+                            value: className 
+                        });
+                    } else if (existing.label.indexOf('Class Teacher') !== -1) {
+                         // If it was added as class teacher, update label to include subject too
+                         existing.label = `${className} (${sub.subject})`;
+                    }
                 }
             });
 
             setClassOptions(options);
             
             // Priority: Initial Filter > First Option
-            if (initialFilter && options.find(o => o.value === initialFilter)) {
-                setSelectedClass(initialFilter);
+            if (initialFilter) {
+                const match = options.find(o => o.value.toLowerCase() === String(initialFilter).toLowerCase());
+                if (match) {
+                    setSelectedClass(match.value);
+                } else if (options.length > 0 && !selectedClass) {
+                    setSelectedClass(options[0].value);
+                }
             } else if (options.length > 0 && !selectedClass) {
                 setSelectedClass(options[0].value);
             } else if (options.length === 0) {
@@ -153,8 +159,15 @@ const StudentsRegistry = ({ user, initialFilter, onMessageStudent }) => {
                             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                             <h3 className="text-lg font-black text-[#1C2B4E] uppercase tracking-wider">Attendance & Marks</h3>
                         </div>
-                        <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                            <Search size={14} /> Search Student
+                        <div className="flex items-center gap-3 bg-slate-50 px-4 py-1.5 rounded-xl border border-slate-100 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                            <Search size={14} className="text-slate-400 ml-1" />
+                            <input 
+                                type="text"
+                                placeholder="Search Student..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="bg-transparent border-none outline-none text-[11px] font-black text-[#1C2B4E] uppercase tracking-widest placeholder:text-slate-300 w-32 md:w-48"
+                            />
                         </div>
                     </div>
 
@@ -164,60 +177,80 @@ const StudentsRegistry = ({ user, initialFilter, onMessageStudent }) => {
                                 <Loader className="text-blue-200 animate-spin mb-4" size={40} />
                                 <p className="text-slate-300 font-bold uppercase tracking-widest text-xs">Fetching Records...</p>
                             </div>
-                        ) : students.length > 0 ? (
-                            <table className="w-full text-left">
-                                <thead>
-                                    <tr className="text-slate-300 text-[11px] font-black uppercase tracking-[0.2em] border-b border-slate-50">
-                                        <th className="pb-8 pl-4">Photo</th>
-                                        <th className="pb-8">Student Name</th>
-                                        <th className="pb-8 text-center">Class</th>
-                                        <th className="pb-8 text-center">Roll No</th>
-                                        <th className="pb-8 text-right pr-4">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50/50">
-                                    {students.map((student, idx) => (
-                                        <tr
-                                            key={idx}
-                                            onClick={() => setSelectedStudent(student)}
-                                            className={`group cursor-pointer transition-all ${selectedStudent?.studentId === student.studentId
-                                                ? 'bg-[#F8FAFC]'
-                                                : 'hover:bg-[#F8FAFC]/50'
-                                                }`}
-                                        >
-                                            <td className="py-6 pl-4">
-                                                <img 
-                                                    src={student.photo_url || `https://ui-avatars.com/api/?name=${student.firstName}+${student.lastName}&background=0047AB&color=fff`} 
-                                                    alt="Photo" 
-                                                    className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm"
-                                                />
-                                            </td>
-                                            <td className="py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[14px] font-black text-[#1C2B4E]">{student.firstName} {student.lastName}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{student.email || 'No email provided'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="py-6 text-center">
-                                                <span className="bg-slate-50 px-3 py-1.5 rounded-lg text-xs font-black text-slate-400">{student.class}</span>
-                                            </td>
-                                            <td className="py-6 text-center text-[13px] font-bold text-slate-900 group-hover:text-[#0047AB] transition-colors font-mono">
-                                                {student.studentId}
-                                            </td>
-                                            <td className="py-6 text-right pr-4">
-                                                <span className="px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight bg-emerald-50 text-emerald-500 border border-emerald-100">
-                                                    Active
-                                                </span>
-                                            </td>
+                        ) : (() => {
+                            const filteredStudents = students.filter(s => {
+                                const fullName = `${s.firstName} ${s.lastName}`.toLowerCase();
+                                const search = searchTerm.toLowerCase();
+                                return fullName.includes(search) || s.studentId.toString().toLowerCase().includes(search);
+                            });
+
+                            if (students.length === 0) {
+                                return (
+                                    <div className="py-20 text-center bg-slate-50/50 rounded-[32px] border-2 border-dashed border-slate-100 mx-4">
+                                        <p className="text-slate-300 font-bold text-lg">No students found for this class.</p>
+                                    </div>
+                                );
+                            }
+
+                            if (filteredStudents.length === 0) {
+                                return (
+                                    <div className="py-20 text-center bg-slate-50/50 rounded-[32px] border-2 border-dashed border-slate-100 mx-4">
+                                        <p className="text-slate-300 font-bold text-lg italic">No results matching "{searchTerm}"</p>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="text-slate-300 text-[11px] font-black uppercase tracking-[0.2em] border-b border-slate-50">
+                                            <th className="pb-8 pl-4">Photo</th>
+                                            <th className="pb-8">Student Name</th>
+                                            <th className="pb-8 text-center">Class</th>
+                                            <th className="pb-8 text-center">Roll No</th>
+                                            <th className="pb-8 text-right pr-4">Status</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <div className="py-20 text-center bg-slate-50/50 rounded-[32px] border-2 border-dashed border-slate-100 mx-4">
-                                <p className="text-slate-300 font-bold text-lg">No students found for this class.</p>
-                            </div>
-                        )}
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50/50">
+                                        {filteredStudents.map((student, idx) => (
+                                            <tr
+                                                key={idx}
+                                                onClick={() => setSelectedStudent(student)}
+                                                className={`group cursor-pointer transition-all ${selectedStudent?.studentId === student.studentId
+                                                    ? 'bg-[#F8FAFC]'
+                                                    : 'hover:bg-[#F8FAFC]/50'
+                                                    }`}
+                                            >
+                                                <td className="py-6 pl-4">
+                                                    <img 
+                                                        src={student.photo_url || `https://ui-avatars.com/api/?name=${student.firstName}+${student.lastName}&background=0047AB&color=fff`} 
+                                                        alt="Photo" 
+                                                        className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm"
+                                                    />
+                                                </td>
+                                                <td className="py-6">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[14px] font-black text-[#1C2B4E]">{student.firstName} {student.lastName}</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{student.email || 'No email provided'}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-6 text-center">
+                                                    <span className="bg-slate-50 px-3 py-1.5 rounded-lg text-xs font-black text-slate-400">{student.class}</span>
+                                                </td>
+                                                <td className="py-6 text-center text-[13px] font-bold text-slate-900 group-hover:text-[#0047AB] transition-colors font-mono">
+                                                    {student.studentId}
+                                                </td>
+                                                <td className="py-6 text-right pr-4">
+                                                    <span className="px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight bg-emerald-50 text-emerald-500 border border-emerald-100">
+                                                        Active
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            );
+                        })()}
                     </div>
                 </div>
 

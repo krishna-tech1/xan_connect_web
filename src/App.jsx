@@ -108,7 +108,7 @@ function App() {
         if (user.role === 'teacher') {
             switch (activeTab) {
                 case 'dashboard':
-                    return <TeacherDashboard user={user} onTabChange={setActiveTab} />;
+                    return <TeacherDashboard user={user} onTabChange={setActiveTab} onSelectClass={handleClassSelect} />;
                 case 'classes':
                     return <MyClasses user={user} onSelectClass={handleClassSelect} />;
                 case 'attendance_mark':
@@ -189,7 +189,11 @@ function App() {
         <div className="min-h-screen bg-[#F8FAFC] flex selection:bg-primary selection:text-white">
             <Sidebar
                 activeTab={activeTab}
-                onTabChange={setActiveTab}
+                onTabChange={(tabId) => {
+                    setStudentFilter(null);
+                    setChatTarget(null);
+                    setActiveTab(tabId);
+                }}
                 user={user}
                 isOpen={isSidebarOpen}
                 setIsOpen={setIsSidebarOpen}

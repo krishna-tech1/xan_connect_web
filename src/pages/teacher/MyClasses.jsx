@@ -17,43 +17,46 @@ const MyClasses = ({ user, onSelectClass }) => {
             ? subjectsData 
             : (typeof subjectsData === 'string' ? JSON.parse(subjectsData || '[]') : []);
 
-        const classMap = {};
+        const classList = [];
+        const uniqueSet = new Set();
         
-        // Add assigned individual subjects
+        // 1. Add all subject assignments
         subjects.forEach(item => {
-            const key = `${item.class || item.className || item.grade}`.trim().toUpperCase();
-            if (key) {
-                if (!classMap[key]) {
-                    classMap[key] = {
-                        grade: key,
-                        subject: item.subject,
-                        roles: ['Subject Teacher']
-                    };
-                } else {
-                    // Update subject to show combined if different? Actually user just wants roles.
-                }
+            const gradeName = (item.class || item.className || item.grade || '').trim();
+            const subjectName = (item.subject || '').trim();
+            const combo = `${gradeName}|${subjectName}`.toUpperCase();
+
+            if (gradeName && !uniqueSet.has(combo)) {
+                uniqueSet.add(combo);
+                classList.push({
+                    grade: gradeName,
+                    subject: subjectName,
+                    roles: ['Subject Teacher']
+                });
             }
         });
 
-        // Add class teacher role
-        const ct = String(user.class_teacher || '').trim().toUpperCase();
-        if (ct && ct !== 'NONE' && ct !== 'NULL') {
-            if (classMap[ct]) {
-                if (!classMap[ct].roles.includes('Class Teacher')) {
-                    classMap[ct].roles.push('Class Teacher');
-                }
+        // 2. Add class teacher role
+        const ct = String(user.class_teacher || '').trim();
+        if (ct && ct.toUpperCase() !== 'NONE' && ct.toLowerCase() !== 'null') {
+            const matchingEntries = classList.filter(c => c.grade.toLowerCase() === ct.toLowerCase());
+            if (matchingEntries.length > 0) {
+                matchingEntries.forEach(c => {
+                    if (!c.roles.includes('Class Teacher')) {
+                        c.roles.push('Class Teacher');
+                    }
+                });
             } else {
-                classMap[ct] = {
+                classList.push({
                     grade: ct,
                     subject: 'Class Administration',
                     roles: ['Class Teacher']
-                };
+                });
             }
         }
 
-        const uniqueClasses = Object.values(classMap);
-        setClasses(uniqueClasses);
-        fetchCounts(uniqueClasses.map(c => c.grade));
+        setClasses(classList);
+        fetchCounts(classList.map(c => c.grade));
     }, [user]);
 
     const fetchCounts = async (classList) => {

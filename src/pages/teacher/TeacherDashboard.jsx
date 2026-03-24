@@ -4,7 +4,7 @@ import axios from 'axios';
 /**
  * TeacherDashboard Component
  */
-const TeacherDashboard = ({ user, onTabChange }) => {
+const TeacherDashboard = ({ user, onTabChange, onSelectClass }) => {
     const [liveAnnouncements, setLiveAnnouncements] = useState([]);
     const [classesCount, setClassesCount] = useState('...');
     const [totalStudents, setTotalStudents] = useState('...');
@@ -98,7 +98,11 @@ const TeacherDashboard = ({ user, onTabChange }) => {
                                     </tr>
                                 ) : (
                                     scheduleData.map((item, i) => (
-                                        <tr key={i} className="group">
+                                        <tr 
+                                            key={i} 
+                                            onClick={() => onSelectClass?.(item.class)}
+                                            className="group cursor-pointer hover:bg-slate-50/50 transition-all"
+                                        >
                                             <td className="py-5 text-[13px] font-black text-[#1C2B4E]">{item.time}</td>
                                             <td className="py-5 font-bold text-slate-400">Period {item.period}</td>
                                             <td className="py-5 text-[13px] font-bold text-slate-400 group-hover:text-[#1C2B4E] transition-colors">{item.subject}</td>
