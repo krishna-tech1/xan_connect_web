@@ -58,6 +58,12 @@ const StudentsRegistry = ({ user, initialFilter, onMessageStudent }) => {
                 });
             }
 
+            // 2. Add Subject Teacher roles
+            const subjectsData = user.subjects || user.subjects_list;
+            const subjects = Array.isArray(subjectsData) 
+                ? subjectsData 
+                : (typeof subjectsData === 'string' ? JSON.parse(subjectsData || '[]') : []);
+
             subjects.forEach(sub => {
                 const className = (sub.class || sub.className || sub.grade || '').trim();
                 if (className) {
