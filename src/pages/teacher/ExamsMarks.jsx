@@ -13,19 +13,31 @@ const ExamsMarks = ({ user }) => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
 
     useEffect(() => {
-        if (user && user.subjects && Array.isArray(user.subjects)) {
-            const options = user.subjects.map(sub => ({
-                label: `${sub.class} (${sub.subject})`,
-                value: `${sub.class}|${sub.subject}`,
-                className: sub.class,
-                subject: sub.subject
-            }));
+        if (user) {
+            const subjectsData = user.subjects || user.subjects_list;
+            const subjects = Array.isArray(subjectsData) 
+                ? subjectsData 
+                : (typeof subjectsData === 'string' ? JSON.parse(subjectsData || '[]') : []);
+
+            const options = subjects.map(sub => {
+                const className = sub.class || sub.className || '';
+                return {
+                    label: `${className} (${sub.subject})`,
+                    value: `${className}|${sub.subject}`,
+                    className: className,
+                    subject: sub.subject
+                };
+            }).filter(opt => opt.className); // Filter out empty classes
+
             setClassOptions(options);
+            
             if (options.length > 0) {
                 setSelectedClassOption(options[0].value);
             } else {
                 setLoading(false);
             }
+        } else {
+            setLoading(false);
         }
     }, [user]);
 
