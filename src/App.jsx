@@ -116,7 +116,7 @@ function App() {
                 case 'exams':
                     return <ExamsMarks user={user} />;
                 case 'homework_assign':
-                    return <AssignHomework />;
+                    return <AssignHomework user={user} />;
                 case 'timetable':
                     return <TeacherTimetable user={user} />;
                 case 'students':
@@ -159,7 +159,7 @@ function App() {
             case 'timetable':
                 return <TimetableTab user={user} />;
             case 'homework':
-                return <HomeworkTab />;
+                return <HomeworkTab user={user} />;
             case 'announcements':
                 return <AnnouncementsTab user={user} />;
             case 'messages':
@@ -167,9 +167,9 @@ function App() {
             case 'documents':
                 return <DocumentsTab user={user} />;
             case 'fees':
-                return <FeesTab />;
+                return <FeesTab user={user} />;
             case 'transport':
-                return <TransportTab />;
+                return <TransportTab user={user} />;
             default:
                 return (
                     <div className="flex flex-col items-center justify-center h-[60vh] text-center">

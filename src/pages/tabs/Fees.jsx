@@ -8,7 +8,10 @@ const FeesTab = ({ user }) => {
     const studentId = user?.studentId || user?.id;
 
     useEffect(() => {
-        if (!studentId) return;
+        if (!studentId) {
+            setLoading(false);
+            return;
+        }
         const fetchFees = async () => {
             try {
                 const res = await axios.get(`${API_URL}/api/portal/student-fees/${studentId}`);
@@ -91,16 +94,6 @@ const FeesTab = ({ user }) => {
                 </div>
             </div>
 
-            {/* Installment Status - Kept as reference for UI / Possible future expansion */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden opacity-50 grayscale">
-                <div className="p-6 border-b border-slate-50 flex justify-between items-center">
-                    <h3 className="text-base font-black text-[#1C2B4E]">Payment Overview</h3>
-                    <span className="text-[9px] font-black uppercase text-slate-400">Offline Records Only</span>
-                </div>
-                <div className="p-12 text-center">
-                    <p className="text-slate-300 font-bold text-[11px] uppercase tracking-widest">Recent payments will be reflected above</p>
-                </div>
-            </div>
         </div>
     );
 };

@@ -6,6 +6,8 @@ const DashboardTab = ({ user, onTabChange }) => {
     const [attendancePercent, setAttendancePercent] = useState('...');
     const [recentMarks, setRecentMarks] = useState([]);
     const [overallGrade, setOverallGrade] = useState('...');
+    const [feeStats, setFeeStats] = useState({ pending: '...', subValue: 'Loading...' });
+    const [homeworkCount, setHomeworkCount] = useState('...');
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5056';
 
     const studentId = user?.studentId || user?.id;
@@ -23,6 +25,16 @@ const DashboardTab = ({ user, onTabChange }) => {
                     }
                 });
                 setLiveAnnouncements(annRes.data.slice(0, 3));
+
+                // Fetch Homework Stats
+                try {
+                    const hwRes = await axios.get(`${API_URL}/api/portal/homework/student-view/${studentId}`);
+                    const pendingCount = hwRes.data.filter(h => !h.submission).length;
+                    setHomeworkCount(pendingCount);
+                } catch (hwErr) {
+                    console.error('Homework Fetch Error:', hwErr);
+                    setHomeworkCount(0);
+                }
 
                 // Fetch Attendance for stat
                 const attRes = await axios.get(`${API_URL}/api/portal/student-attendance/${studentId}`);
@@ -48,6 +60,30 @@ const DashboardTab = ({ user, onTabChange }) => {
                     else if (avg >= 70) setOverallGrade('B+');
                     else if (avg >= 60) setOverallGrade('B');
                     else setOverallGrade('C');
+                }
+
+                // Fetch Fee Data
+                const feeRes = await axios.get(`${API_URL}/api/portal/student-fees/${studentId}`);
+                const feeData = feeRes.data;
+                const pendingVal = parseFloat(feeData.stats.pending.replace(/[^\d.-]/g, ''));
+                
+                if (pendingVal <= 0) {
+                    setFeeStats({
+                        pending: 'Cleared',
+                        subValue: 'No outstanding balance',
+                        isPaid: true
+                    });
+                } else {
+                    // Find nearest due date from breakdown if any
+                    const breakdown = feeData.breakdown || [];
+                    const withDates = breakdown.filter(b => b.period && b.period.includes('Due:'));
+                    const nearestDue = withDates.length > 0 ? withDates[0].period : 'Termly';
+                    
+                    setFeeStats({
+                        pending: feeData.stats.pending,
+                        subValue: nearestDue,
+                        isPaid: false
+                    });
                 }
             } catch (err) {
                 console.error('Dashboard Data Fetch Error:', err);
@@ -95,26 +131,30 @@ const DashboardTab = ({ user, onTabChange }) => {
         {
             id: 'fees',
             label: 'Pending Fees',
-            value: '₹12,500',
-            subValue: 'Due: Mar 15',
+            value: feeStats.pending,
+            subValue: feeStats.subValue,
             iconSrc: (color) => (
                 <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M8 8h8" />
-                    <path d="M8 12h8" />
-                    <path d="M13 12L8 17" />
-                    <path d="M12 8c0 4-5 4-5 4" />
+                    {feeStats.isPaid ? (
+                        <path d="M20 6L9 17l-5-5" />
+                    ) : (
+                        <>
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 8v4" />
+                            <path d="M12 16h.01" />
+                        </>
+                    )}
                 </svg>
             ),
-            bgColor: '#FFF5F0',
-            iconColor: '#F6AD55',
-            subValueColor: '#E53E3E'
+            bgColor: feeStats.isPaid ? '#E6F6EC' : '#FFF5F0',
+            iconColor: feeStats.isPaid ? '#22C55E' : '#F6AD55',
+            subValueColor: feeStats.isPaid ? '#22C55E' : '#E53E3E'
         },
         {
             id: 'homework',
             label: 'Homework Due',
-            value: '2',
-            subValue: '2 assignments pending',
+            value: homeworkCount.toString(),
+            subValue: `${homeworkCount} assignments pending`,
             iconSrc: (color) => (
                 <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
