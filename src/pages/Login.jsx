@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { AppConstants } from '../utils/constants';
 import loginBg from '../assets/login.png';
 import schoolLogo from '../assets/logo.png';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { portalAPI } from '../services/api';
 
 const LoginPage = ({ onLogin }) => {
-    const [role, setRole] = useState('parent'); // 'parent' (for student) or 'teacher'
+    const [role, setRole] = useState('student'); // Default to student
     const [loginId, setLoginId] = useState('');
     const [dob, setDob] = useState('');
     const [error, setError] = useState('');
@@ -23,7 +23,7 @@ const LoginPage = ({ onLogin }) => {
             const response = await portalAPI.login({
                 id: loginId,
                 dob: dob,
-                role: role === 'parent' ? 'student' : 'teacher'
+                role: role
             });
 
             const { token, user } = response.data;
@@ -54,9 +54,9 @@ const LoginPage = ({ onLogin }) => {
                     {/* Role Toggles - Styled precisely like the image */}
                     <div className="flex mb-10 overflow-hidden border-[1.5px] border-[#004AAD] rounded-xl shadow-sm">
                         <button
-                            onClick={() => setRole('parent')}
+                            onClick={() => setRole('student')}
                             type="button"
-                            className={`flex-1 py-3.5 text-[15px] font-[700] transition-all ${role === 'parent' ? 'bg-[#004AAD] text-white' : 'bg-white text-[#004AAD]'}`}
+                            className={`flex-1 py-3.5 text-[15px] font-[700] transition-all ${role === 'student' ? 'bg-[#004AAD] text-white' : 'bg-white text-[#004AAD]'}`}
                         >
                             Student
                         </button>
@@ -100,7 +100,7 @@ const LoginPage = ({ onLogin }) => {
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-5 top-1/2 -translate-y-1/2 text-[#004AAD]/40 hover:text-[#004AAD] transition-all"
                                 >
-                                    {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
                         </div>

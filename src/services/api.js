@@ -1,8 +1,10 @@
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL 
-    ? `${import.meta.env.VITE_API_URL}/api/portal` 
-    : 'http://localhost:5056/api/portal';
+    ? (import.meta.env.VITE_API_URL.includes('/api') 
+        ? `${import.meta.env.VITE_API_URL}/portal` 
+        : `${import.meta.env.VITE_API_URL}/api/portal`)
+    : 'http://127.0.0.1:5056/api/portal';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
