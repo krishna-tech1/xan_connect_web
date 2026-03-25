@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppConstants } from '../utils/constants';
 import loginBg from '../assets/login.png';
 import schoolLogo from '../assets/logo.png';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 import { portalAPI } from '../services/api';
 
@@ -11,6 +12,7 @@ const LoginPage = ({ onLogin }) => {
     const [dob, setDob] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -86,13 +88,20 @@ const LoginPage = ({ onLogin }) => {
                             <label className="block text-sm font-[700] text-[#2D3748] ml-0.5">Date of Birth (Password)</label>
                             <div className="relative">
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     value={dob}
                                     onChange={(e) => setDob(e.target.value)}
                                     placeholder="YYYY-MM-DD"
                                     required
                                     className="w-full bg-[#EBF4FF] border-none rounded-[18px] p-4 focus:ring-2 focus:ring-[#004AAD]/20 transition-all outline-none text-[#2D3748] font-[500] text-[15px]"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-[#004AAD]/40 hover:text-[#004AAD] transition-all"
+                                >
+                                    {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                                </button>
                             </div>
                         </div>
 
